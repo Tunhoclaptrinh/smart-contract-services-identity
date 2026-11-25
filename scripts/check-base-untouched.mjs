@@ -16,8 +16,9 @@ const ALLOWED = [
   "service/", // the service's own code, tests, openapi.yaml, SERVICE.md
   "packages/contracts/", // resources and permissions the service owns (data, not code)
   "pnpm-lock.yaml",
+  // The root CHANGELOG.md is the base's: a service writes service/CHANGELOG.md, so pulling the
+  // base never conflicts.
   "README.md",
-  "CHANGELOG.md",
   // Parent repository, branch main only: system-level business pieces.
   "gateway/",
   "postman/",

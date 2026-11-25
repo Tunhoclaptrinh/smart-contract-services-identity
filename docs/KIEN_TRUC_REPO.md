@@ -45,7 +45,7 @@ git push -u origin HEAD                         # rồi mở PR vào main
 Quy tắc giữ cho việc merge không xung đột:
 
 - **Không sửa `packages/nest-common` và các tệp nền khác trong repo service.** Thiếu gì ở chassis thì sửa ở repo cha (`core/<việc>` → `base`), rồi kéo về.
-- **Sửa trong `service/`** (mã, test, `openapi.yaml`, `SERVICE.md`), và trong `packages/contracts/*.json` **chỉ** mục của resource service đó sở hữu (đây là dữ liệu khai báo, không phải mã; nếu phần nền cũng đổi tệp này thì xung đột nhỏ, sửa tay khi merge).
+- **Sửa trong `service/`** (mã, test, `openapi.yaml`, `SERVICE.md`, `CHANGELOG.md` của service; `CHANGELOG.md` gốc là của phần nền, ghi vào sẽ xung đột mỗi lần đồng bộ), và trong `packages/contracts/*.json` **chỉ** mục của resource service đó sở hữu (đây là dữ liệu khai báo, không phải mã; nếu phần nền cũng đổi tệp này thì xung đột nhỏ, sửa tay khi merge).
 - CI kiểm hai quy tắc trên bằng `scripts/check-base-untouched.mjs`: so nhánh với điểm chung gần nhất của nó và `base` của repo cha, nên kéo phần nền mới về không bao giờ làm nó báo lỗi. Danh sách đường dẫn được sửa nằm trong script và ở mục 4 của `CLAUDE.md`.
 - Khuôn `service/` của repo cha thay đổi thì repo service **không** tự nhận (đã thay bằng mã riêng); khuôn chỉ dùng khi tạo service mới. Vì vậy khuôn giữ thật mỏng, mọi thứ dùng chung nằm trong `nest-common`.
 
