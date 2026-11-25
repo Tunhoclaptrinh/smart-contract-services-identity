@@ -2,6 +2,7 @@
 
 Mỗi bước dựng phần nền ghi một mục; mới nhất ở trên.
 
+- **fix: new service repositories track all their branches** — `new-service.sh` clone một nhánh nên `origin` chỉ lấy `base`; giờ đặt lại refspec. Kiểm phần nền coi repo không có nhánh `base` là repo service (lấy `base` của repo cha), kể cả khi tên gói chưa đổi
 - **docs: keep each service's changelog in service/** — `CHANGELOG.md` gốc là của phần nền; service ghi `service/CHANGELOG.md` (khuôn có sẵn), kiểm phần nền không cho sửa tệp gốc nữa, vì đồng bộ phần nền luôn xung đột ở đầu tệp
 - **test: sign the smoke token for the seeded administrator** — identity kiểm cả tài khoản có tồn tại, nên token của smoke dùng `u-sysadmin` (tài khoản seed); service khác chỉ đọc claims
 - **feat(nest-common): verify identity tokens in every service** — `JwtAuthGuard`, `signActorToken`, `verifyActorToken`; một `JWT_SECRET` cho mọi service, dev dùng bí mật chung cố định; khuôn service dùng guard này; smoke kiểm token đúng được nhận, token giả bị từ chối

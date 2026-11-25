@@ -52,8 +52,12 @@ if (target === "base" || head === "base" || head.startsWith("core/")) {
 const serviceName = JSON.parse(
   readFileSync("service/package.json", "utf8"),
 ).name;
+// A service repository has no base branch of its own; its base is the parent's.
+const hasOwnBase = Boolean(
+  tryGit("ls-remote", "--exit-code", "--heads", "origin", "base"),
+);
 let baseRef;
-if (serviceName === "@sc/service") {
+if (serviceName === "@sc/service" && hasOwnBase) {
   baseRef = "origin/base";
   tryGit("fetch", "--quiet", "origin", "base:refs/remotes/origin/base");
 } else {

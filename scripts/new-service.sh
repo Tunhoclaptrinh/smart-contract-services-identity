@@ -12,6 +12,8 @@ git clone --quiet --branch base --single-branch "$parent" "$target"
 cd "$target"
 git branch -m base main
 git remote set-url origin "git@github.com:Tunhoclaptrinh/smart-contract-services-${name}.git"
+# The clone took one branch; the service repository tracks all of its own branches.
+git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 git remote add upstream "$upstream"
 node -e '
 const fs = require("node:fs");
