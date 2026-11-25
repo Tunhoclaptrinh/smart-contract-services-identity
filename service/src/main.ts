@@ -1,30 +1,48 @@
 import { Module } from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
 import {
+  AuditExportController,
   BaseController,
   BaseService,
   bootstrapService,
   HealthController,
-  JwtAuthGuard,
   PermissionsController,
   Repository,
   RolesGuard,
 } from "@sc/nest-common";
+import { AuthController, AuthGuard, AuthService } from "./auth";
 
 /**
- * Service template. A service repository replaces this module with its own controllers and
- * providers; the chassis (@sc/nest-common) gives it storage, CRUD, errors and startup.
+ * Identity service: companies, accounts, sign-in and sign-up. It signs the access tokens every
+ * other service verifies (JwtAuthGuard); its own guard also checks the account is still active
+ * and the token not revoked.
  */
 @Module({
-  controllers: [HealthController, BaseController, PermissionsController],
+  controllers: [
+    HealthController,
+    AuthController,
+    BaseController,
+    PermissionsController,
+    AuditExportController,
+  ],
   providers: [
     Repository,
     BaseService,
+    AuthService,
     // Order matters: the token sets req.user, then roles and permissions are checked.
-    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],
 })
-class ServiceModule {}
+class IdentityModule {}
 
-void bootstrapService({ module: ServiceModule, name: "service" });
+void bootstrapService({
+  module: IdentityModule,
+  name: "identity",
+  port: 3001,
+  // Seed companies and accounts; production seeds only with an explicit SEED_PASSWORD.
+  beforeListen: async (app) => {
+    if (process.env.NODE_ENV !== "production" || process.env.SEED_PASSWORD)
+      await app.get(AuthService).seed();
+  },
+});

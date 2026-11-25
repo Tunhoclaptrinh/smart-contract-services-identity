@@ -1,0 +1,237 @@
+openapi: 3.1.0
+info:
+  title: identity
+  version: 1.0.0
+  description: >
+    Companies, accounts, sign-in and company sign-up. Every success body is wrapped as
+    `{ success: true, data }`; every error is `{ statusCode, code, message, requestId }` with a
+    business `code`. Generic CRUD of organizations, users and settings (`/resources/...`) is the
+    chassis' and is listed in Swagger (`/api/docs`).
+servers:
+  - url: http://127.0.0.1:3001/api/v1
+    description: identity directly
+  - url: http://127.0.0.1:3000/api/v1
+    description: through the gateway
+security:
+  - bearer: []
+paths:
+  /auth/login:
+    post:
+      summary: Sign in with email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email, maxLength: 254 }
+                password: { type: string, maxLength: 1024 }
+      responses:
+        "201": { $ref: "#/components/responses/Session" }
+        "401":
+          {
+            $ref: "#/components/responses/Problem",
+            description: INVALID_CREDENTIALS,
+          }
+  /auth/register:
+    post:
+      summary: Sign up a company and its account administrator (ORG_ADMIN)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [organization, admin]
+              properties:
+                organization:
+                  type: object
+                  required: [name, code, kind]
+                  properties:
+                    name: { type: string, maxLength: 250 }
+                    code: { type: string, pattern: "^[A-Za-z0-9_-]{2,40}$" }
+                    kind: { type: string, enum: [BUYER, SUPPLIER] }
+                    email: { type: string, format: email }
+                    taxCode: { type: string, pattern: "^\\d{10}(-\\d{3})?$" }
+                admin:
+                  type: object
+                  required: [displayName, email, password]
+                  properties:
+                    displayName: { type: string, maxLength: 250 }
+                    email: { type: string, format: email }
+                    password: { type: string, minLength: 12, maxLength: 128 }
+      responses:
+        "201": { $ref: "#/components/responses/Session" }
+        "400":
+          $ref: "#/components/responses/Problem"
+          description: INVALID_EMAIL, PASSWORD_MINIMUM_12_CHARACTERS, INVALID_ORGANIZATION_KIND, REQUIRED:<field>
+        "404":
+          {
+            $ref: "#/components/responses/Problem",
+            description: SIGNUP_DISABLED,
+          }
+        "409":
+          {
+            $ref: "#/components/responses/Problem",
+            description: EMAIL_TAKEN,
+            ORGANIZATION_CODE_TAKEN,
+          }
+  /auth/me:
+    get:
+      summary: The signed-in actor
+      responses:
+        "200":
+          description: The actor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { const: true }
+                  data: { $ref: "#/components/schemas/Actor" }
+        "401":
+          {
+            $ref: "#/components/responses/Problem",
+            description: AUTHENTICATION_REQUIRED,
+            INVALID_SESSION,
+          }
+  /auth/logout:
+    post:
+      summary: Sign out; every earlier token of this account stops working at identity
+      responses:
+        "201": { description: Signed out }
+        "401": { $ref: "#/components/responses/Problem" }
+  /auth/users/{id}/password:
+    post:
+      summary: Reset an account's password (permission users:reset-password)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password: { type: string, minLength: 12, maxLength: 128 }
+      responses:
+        "201": { description: Updated }
+        "400":
+          {
+            $ref: "#/components/responses/Problem",
+            description: PASSWORD_MINIMUM_12_CHARACTERS,
+          }
+        "403":
+          {
+            $ref: "#/components/responses/Problem",
+            description: PERMISSION_DENIED or an ORG_ADMIN refusal,
+          }
+        "404":
+          {
+            $ref: "#/components/responses/Problem",
+            description: USER_NOT_FOUND,
+          }
+  /auth/demo-accounts:
+    get:
+      summary: Featured demo accounts (only when DEMO_LOGIN is on)
+      security: []
+      responses:
+        "200": { description: Demo accounts }
+        "404":
+          {
+            $ref: "#/components/responses/Problem",
+            description: DEMO_LOGIN_DISABLED,
+          }
+  /auth/demo-login:
+    post:
+      summary: One-click demo sign-in (only when DEMO_LOGIN is on)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  {
+                    type: string,
+                    format: email,
+                    description: One of the demo accounts,
+                  }
+      responses:
+        "201": { $ref: "#/components/responses/Session" }
+        "404":
+          {
+            $ref: "#/components/responses/Problem",
+            description: DEMO_LOGIN_DISABLED,
+          }
+components:
+  securitySchemes:
+    bearer: { type: http, scheme: bearer, bearerFormat: JWT }
+  schemas:
+    Actor:
+      type: object
+      required: [id, email, displayName, role, organizationId, permissions]
+      properties:
+        id: { type: string }
+        email: { type: string }
+        displayName: { type: string }
+        role:
+          type: string
+          enum:
+            [
+              CONTRACT_OWNER,
+              FINANCE_APPROVER,
+              SECONDARY_APPROVER,
+              LEGAL_REVIEWER,
+              ADMIN_AUDITOR,
+              SYSTEM_ADMIN,
+              AUDITOR,
+              SUPPLIER,
+              ORG_ADMIN,
+            ]
+        organizationId: { type: string }
+        roleChipOrganization: { type: string }
+        partyId: { type: [string, "null"] }
+        title: { type: string }
+        permissions: { type: array, items: { type: string } }
+    Problem:
+      type: object
+      required: [statusCode, code]
+      properties:
+        statusCode: { type: integer }
+        code:
+          { type: string, description: Business error code, UPPER_SNAKE_CASE }
+        message: { type: string }
+        requestId: { type: string }
+  responses:
+    Session:
+      description: Signed in
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success: { const: true }
+              data:
+                type: object
+                required: [token, user]
+                properties:
+                  token:
+                    {
+                      type: string,
+                      description: "JWT; claims carry the actor (sub, role, org, ...)",
+                    }
+                  user: { $ref: "#/components/schemas/Actor" }
+    Problem:
+      description: Business error
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Problem" }

@@ -1,3 +1,24 @@
+# smart-contract-services-identity
+
+Identity service of the Smart Contract Workflow project: companies, accounts, sign-in, company
+sign-up, and the access tokens every other service verifies. Port 3001. What it owns, its
+endpoints and what came from CodeCash: [service/SERVICE.md](service/SERVICE.md).
+
+This repository is a service repository: the shared base (chassis `packages/nest-common`,
+configuration, CI) comes from the parent `smart-contract-services` (remote `upstream`) and is not
+edited here; the identity code lives in `service/`. See [CLAUDE.md](CLAUDE.md) and
+[docs/KIEN_TRUC_REPO.md](docs/KIEN_TRUC_REPO.md).
+
+```bash
+pnpm install
+pnpm dev          # http://127.0.0.1:3001/api/v1, Swagger at /api/docs; seed accounts use Passw0rd!
+pnpm test         # chassis storage tests, identity tests (service/test), service smoke
+```
+
+---
+
+The parent repository's description follows.
+
 # smart-contract-services
 
 Parent repository of the Smart Contract Workflow services (course: Microservices). NestJS 11, TypeScript.
