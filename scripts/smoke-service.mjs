@@ -39,10 +39,11 @@ try {
   const problem = await resources.json();
   assert.equal(typeof problem.code, "string");
   assert.ok(problem.requestId);
-  // A token signed with the shared secret is accepted: the actor comes from its claims.
+  // A token signed with the shared secret is accepted: the actor comes from its claims. The id
+  // is the seeded system administrator, because identity also checks that the account exists.
   const token = signActorToken({
-    id: "u-smoke",
-    email: "smoke@example.test",
+    id: "u-sysadmin",
+    email: "sysadmin@example.test",
     displayName: "Smoke",
     role: "SYSTEM_ADMIN",
     organizationId: "OPS",

@@ -6,7 +6,6 @@
 /packages/contracts/
 /pnpm-lock.yaml
 /README.md
-/CHANGELOG.md
 /gateway/
 /postman/
 /compose.yaml

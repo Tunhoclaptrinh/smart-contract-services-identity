@@ -2,6 +2,8 @@
 
 Mỗi bước dựng phần nền ghi một mục; mới nhất ở trên.
 
+- **docs: keep each service's changelog in service/** — `CHANGELOG.md` gốc là của phần nền; service ghi `service/CHANGELOG.md` (khuôn có sẵn), kiểm phần nền không cho sửa tệp gốc nữa, vì đồng bộ phần nền luôn xung đột ở đầu tệp
+- **test: sign the smoke token for the seeded administrator** — identity kiểm cả tài khoản có tồn tại, nên token của smoke dùng `u-sysadmin` (tài khoản seed); service khác chỉ đọc claims
 - **feat(nest-common): verify identity tokens in every service** — `JwtAuthGuard`, `signActorToken`, `verifyActorToken`; một `JWT_SECRET` cho mọi service, dev dùng bí mật chung cố định; khuôn service dùng guard này; smoke kiểm token đúng được nhận, token giả bị từ chối
 - **ci: refuse base changes outside the base flow** — `scripts/check-base-untouched.mjs` (`pnpm check:base`), `.github/CODEOWNERS`, `protect-branches.sh` bỏ qua nhánh repo không có và yêu cầu code owner duyệt
 - **docs: AI guide, CodeCash map, work script** — `CLAUDE.md` + `AGENTS.md`, `service/SERVICE.md` (thẻ service), `docs/DOI_CHIEU_CODECASH.md`, `docs/KICH_BAN_VIBE_CODE.md`; sửa bảng phần nền cũ trong `QUY_TRINH_NHANH.md`

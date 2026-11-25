@@ -47,8 +47,8 @@ Mã cũ và tài liệu cũ mâu thuẫn nhau thì `NGHIEP_VU.md` thắng; ghi c
 | --- | --- |
 | `service/**` (mã, test, `openapi.yaml`, `SERVICE.md`, `package.json` của service) | `packages/nest-common/**` (chassis) |
 | `packages/contracts/resources.json`, `permissions.json`: **chỉ** mục của resource service này sở hữu | `scripts/**`, `.github/**`, `infra/**`, cấu hình gốc (`package.json` gốc, `tsconfig*`, ESLint, Prettier, `pnpm-workspace.yaml`) |
-| `README.md`, `CHANGELOG.md`, `pnpm-lock.yaml` | `CLAUDE.md`, `AGENTS.md`, `docs/*.md` chung |
-| Repo cha, nhánh `main`: `gateway/`, `postman/`, `compose.yaml` | |
+| `service/CHANGELOG.md` (nhật ký thay đổi của service), `README.md` (chỉ thêm phần giới thiệu ở đầu), `pnpm-lock.yaml` | `CHANGELOG.md` gốc (của phần nền: đổi mỗi lần đồng bộ, ghi vào sẽ xung đột), `CLAUDE.md`, `AGENTS.md`, `docs/*.md` chung |
+| Repo cha, nhánh `main`: `gateway/` (nhật ký ở `gateway/CHANGELOG.md`), `postman/`, `compose.yaml` | |
 
 CI chạy `scripts/check-base-untouched.mjs` và **từ chối** PR sửa phần nền ngoài quy trình. Thiếu
 gì ở phần nền (một hàm trong chassis, một guard, một cấu hình)? **Dừng lại**, nói với người dùng

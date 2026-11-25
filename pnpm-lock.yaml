@@ -254,6 +254,9 @@ importers:
       '@sc/nest-common':
         specifier: workspace:*
         version: link:../packages/nest-common
+      bcryptjs:
+        specifier: ^3.0.3
+        version: 3.0.3
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
