@@ -22,7 +22,7 @@ const actor = {
 // Accounts and configuration belong to the system administrator (SoD-1).
 const admin = { ...actor, id: "admin", role: "SYSTEM_ADMIN" };
 beforeEach(async () => {
-  dir = await mkdtemp(join(tmpdir(), "codecash-test-"));
+  dir = await mkdtemp(join(tmpdir(), "identity-test-"));
   process.env.DATA_DIR = dir;
   process.env.STORAGE_DRIVER = "file";
   process.env.REPO_ROOT = repoRoot;

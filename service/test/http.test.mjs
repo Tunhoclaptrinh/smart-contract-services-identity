@@ -47,7 +47,7 @@ const post = (path, body, headers = {}) =>
     body: JSON.stringify(body),
   });
 const login = () =>
-  post("/auth/login", { email: "sysadmin@codecash.vn", password: "Passw0rd!" });
+  post("/auth/login", { email: "sysadmin@scw.vn", password: "Passw0rd!" });
 
 test("malformed bodies are 400 with every field problem, unknown fields refused", async () => {
   const res = await post("/auth/register", {
@@ -84,7 +84,7 @@ test("sign-in is 200 with tokens and an httpOnly refresh cookie; refresh works b
   const me = await fetch(`${base}/auth/me`, {
     headers: { authorization: `Bearer ${data.accessToken}` },
   });
-  assert.equal((await me.json()).data.email, "sysadmin@codecash.vn");
+  assert.equal((await me.json()).data.email, "sysadmin@scw.vn");
   const renewed = await post(
     "/auth/refresh",
     {},
@@ -121,7 +121,7 @@ test("the JWKS is public and holds no private part", async () => {
 
 test("forgot password is 202 and the demo outbox shows the message", async () => {
   const res = await post("/auth/forgot-password", {
-    email: "sysadmin@codecash.vn",
+    email: "sysadmin@scw.vn",
   });
   assert.equal(res.status, 202);
   const outbox = (await (await fetch(`${base}/auth/outbox`)).json()).data;
