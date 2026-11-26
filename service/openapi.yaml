@@ -1,113 +1,235 @@
 openapi: 3.1.0
 info:
   title: identity
-  version: 1.0.0
+  version: 2.0.0
   description: >
-    Companies, accounts, sign-in and company sign-up. Every success body is wrapped as
-    `{ success: true, data }`; every error is `{ statusCode, code, message, requestId }` with a
-    business `code`. Generic CRUD of organizations, users and settings (`/resources/...`) is the
-    chassis' and is listed in Swagger (`/api/docs`).
+    Companies, accounts, sign-in, sign-up, sessions (access + refresh tokens), passwords and
+    invitations. Every success body is wrapped as `{ success: true, data, requestId }`; every error
+    is RFC 9457 `application/problem+json` with a business `code` and, for invalid input, an
+    `errors[]` list per field. Access tokens are RS256, 15 minutes; their public keys are at
+    `/.well-known/jwks.json`. Generic CRUD of organizations, users and settings (`/resources/...`)
+    is the chassis' (packages/nest-common/MODULES.md) and is listed in Swagger (`/api/docs`).
 servers:
-  - url: http://127.0.0.1:3001/api/v1
-    description: identity directly
   - url: http://127.0.0.1:3000/api/v1
     description: through the gateway
+  - url: http://127.0.0.1:3001/api/v1
+    description: identity directly (development)
 security:
   - bearer: []
+tags:
+  - name: session
+  - name: password
+  - name: invitation
+  - name: keys
 paths:
   /auth/login:
     post:
+      tags: [session]
       summary: Sign in with email and password
+      description: >
+        Five wrong passwords within 15 minutes lock the account for 15 minutes (429). Unknown
+        emails and wrong passwords get the same 401. Limited per client address.
       security: []
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [email, password]
-              properties:
-                email: { type: string, format: email, maxLength: 254 }
-                password: { type: string, maxLength: 1024 }
+            schema: { $ref: "#/components/schemas/Login" }
       responses:
-        "201": { $ref: "#/components/responses/Session" }
+        "200": { $ref: "#/components/responses/Session" }
+        "400": { $ref: "#/components/responses/Invalid" }
         "401":
           {
             $ref: "#/components/responses/Problem",
-            description: INVALID_CREDENTIALS,
+            description: "INVALID_CREDENTIALS",
+          }
+        "429":
+          {
+            $ref: "#/components/responses/Problem",
+            description: "ACCOUNT_TEMPORARILY_LOCKED, TOO_MANY_REQUESTS",
           }
   /auth/register:
     post:
-      summary: Sign up a company and its account administrator (ORG_ADMIN)
+      tags: [session]
+      summary: Sign up a company with its account administrator (ORG_ADMIN)
       security: []
       requestBody:
         required: true
         content:
           application/json:
-            schema:
-              type: object
-              required: [organization, admin]
-              properties:
-                organization:
-                  type: object
-                  required: [name, code, kind]
-                  properties:
-                    name: { type: string, maxLength: 250 }
-                    code: { type: string, pattern: "^[A-Za-z0-9_-]{2,40}$" }
-                    kind: { type: string, enum: [BUYER, SUPPLIER] }
-                    email: { type: string, format: email }
-                    taxCode: { type: string, pattern: "^\\d{10}(-\\d{3})?$" }
-                admin:
-                  type: object
-                  required: [displayName, email, password]
-                  properties:
-                    displayName: { type: string, maxLength: 250 }
-                    email: { type: string, format: email }
-                    password: { type: string, minLength: 12, maxLength: 128 }
+            schema: { $ref: "#/components/schemas/Register" }
       responses:
         "201": { $ref: "#/components/responses/Session" }
         "400":
-          $ref: "#/components/responses/Problem"
-          description: INVALID_EMAIL, PASSWORD_MINIMUM_12_CHARACTERS, INVALID_ORGANIZATION_KIND, REQUIRED:<field>
+          $ref: "#/components/responses/Invalid"
         "404":
           {
             $ref: "#/components/responses/Problem",
-            description: SIGNUP_DISABLED,
+            description: "SIGNUP_DISABLED",
           }
         "409":
           {
             $ref: "#/components/responses/Problem",
-            description: EMAIL_TAKEN,
-            ORGANIZATION_CODE_TAKEN,
+            description: "EMAIL_TAKEN, ORGANIZATION_CODE_TAKEN",
           }
-  /auth/me:
-    get:
-      summary: The signed-in actor
+  /auth/refresh:
+    post:
+      tags: [session]
+      summary: Exchange a refresh token for a new pair (rotation)
+      description: >
+        The refresh token comes from the body or the httpOnly cookie `sc_refresh`. Each token works
+        once; presenting a spent one revokes every token of that sign-in (REFRESH_TOKEN_REUSED).
+      security: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken: { type: string, maxLength: 200 }
       responses:
-        "200":
-          description: The actor
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success: { const: true }
-                  data: { $ref: "#/components/schemas/Actor" }
+        "200": { $ref: "#/components/responses/Session" }
         "401":
           {
             $ref: "#/components/responses/Problem",
-            description: AUTHENTICATION_REQUIRED,
-            INVALID_SESSION,
+            description: "INVALID_REFRESH_TOKEN, REFRESH_TOKEN_REUSED",
           }
   /auth/logout:
     post:
-      summary: Sign out; every earlier token of this account stops working at identity
+      tags: [session]
+      summary: End every session of the account (access and refresh tokens)
       responses:
-        "201": { description: Signed out }
+        "200":
+          description: Signed out
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Envelope" }
         "401": { $ref: "#/components/responses/Problem" }
+  /auth/me:
+    get:
+      tags: [session]
+      summary: The signed-in account
+      responses:
+        "200":
+          description: Actor
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Envelope"
+                  - properties: { data: { $ref: "#/components/schemas/Actor" } }
+        "401":
+          {
+            $ref: "#/components/responses/Problem",
+            description: "AUTHENTICATION_REQUIRED, INVALID_SESSION",
+          }
+  /auth/demo-accounts:
+    get:
+      tags: [session]
+      summary: Seed accounts for one-click demo sign-in (demo deployments)
+      security: []
+      responses:
+        "200":
+          {
+            description: "Accounts grouped by organisation; `enabled: false` outside demo",
+          }
+  /auth/demo-login:
+    post:
+      tags: [session]
+      summary: Sign in as a seed account without its password (demo deployments)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties: { email: { type: string, maxLength: 254 } }
+      responses:
+        "200": { $ref: "#/components/responses/Session" }
+        "401":
+          {
+            $ref: "#/components/responses/Problem",
+            description: "INVALID_CREDENTIALS",
+          }
+        "404":
+          {
+            $ref: "#/components/responses/Problem",
+            description: "DEMO_LOGIN_DISABLED",
+          }
+  /auth/password:
+    post:
+      tags: [password]
+      summary: Change one's own password
+      description: Other sessions end; the answer is a fresh session for this one.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword: { type: string, maxLength: 1024 }
+                newPassword: { $ref: "#/components/schemas/Password" }
+      responses:
+        "200": { $ref: "#/components/responses/Session" }
+        "400":
+          $ref: "#/components/responses/Invalid"
+        "401": { $ref: "#/components/responses/Problem" }
+  /auth/forgot-password:
+    post:
+      tags: [password]
+      summary: Ask for a password reset code
+      description: >
+        Always 202, whether or not the email has an account. A code valid 30 minutes is sent (the
+        mail outbox until a mail service exists); only the newest code works.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                { email: { type: string, format: email, maxLength: 254 } }
+      responses:
+        "202": { description: "Accepted" }
+        "400": { $ref: "#/components/responses/Invalid" }
+        "429":
+          {
+            $ref: "#/components/responses/Problem",
+            description: "TOO_MANY_REQUESTS",
+          }
+  /auth/reset-password:
+    post:
+      tags: [password]
+      summary: Set a new password with a reset code
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, newPassword]
+              properties:
+                token: { type: string, maxLength: 200 }
+                newPassword: { $ref: "#/components/schemas/Password" }
+      responses:
+        "200":
+          {
+            description: "`{ reset: true, email }`; every earlier session ends",
+          }
+        "400":
+          $ref: "#/components/responses/Invalid"
   /auth/users/{id}/password:
     post:
-      summary: Reset an account's password (permission users:reset-password)
+      tags: [password]
+      summary: An administrator sets the password of an account it manages
+      description: Needs `users:reset-password`; a company administrator only for its own business accounts.
       parameters:
         - { name: id, in: path, required: true, schema: { type: string } }
       requestBody:
@@ -118,38 +240,79 @@ paths:
               type: object
               required: [password]
               properties:
-                password: { type: string, minLength: 12, maxLength: 128 }
+                { password: { $ref: "#/components/schemas/Password" } }
       responses:
-        "201": { description: Updated }
-        "400":
-          {
-            $ref: "#/components/responses/Problem",
-            description: PASSWORD_MINIMUM_12_CHARACTERS,
-          }
+        "200": { description: "`{ updated: true }`" }
+        "400": { $ref: "#/components/responses/Invalid" }
         "403":
           {
             $ref: "#/components/responses/Problem",
-            description: PERMISSION_DENIED or an ORG_ADMIN refusal,
+            description: "PERMISSION_DENIED, OTHER_ORGANIZATION, ROLE_NOT_ASSIGNABLE",
           }
         "404":
           {
             $ref: "#/components/responses/Problem",
-            description: USER_NOT_FOUND,
+            description: "USER_NOT_FOUND",
           }
-  /auth/demo-accounts:
-    get:
-      summary: Featured demo accounts (only when DEMO_LOGIN is on)
-      security: []
-      responses:
-        "200": { description: Demo accounts }
-        "404":
-          {
-            $ref: "#/components/responses/Problem",
-            description: DEMO_LOGIN_DISABLED,
-          }
-  /auth/demo-login:
+  /auth/invitations:
     post:
-      summary: One-click demo sign-in (only when DEMO_LOGIN is on)
+      tags: [invitation]
+      summary: Invite a person into an organisation with a role
+      description: >
+        Needs `users:create`. A company administrator invites into its own company and only the
+        roles it may assign (SoD-1); a system administrator names the organisation. The account is
+        INVITED and inactive until accepted; inviting again re-sends and voids earlier codes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, displayName, role]
+              properties:
+                email: { type: string, format: email, maxLength: 254 }
+                displayName: { type: string, maxLength: 250 }
+                role: { $ref: "#/components/schemas/Role" }
+                title: { type: string, maxLength: 250 }
+                organizationId:
+                  { type: string, description: "system administrator only" }
+      responses:
+        "201":
+          { description: "`{ userId, email, status: INVITED, expiresAt }`" }
+        "400": { $ref: "#/components/responses/Invalid" }
+        "403":
+          {
+            $ref: "#/components/responses/Problem",
+            description: "PERMISSION_DENIED, ROLE_NOT_ASSIGNABLE, OTHER_ORGANIZATION",
+          }
+        "404":
+          {
+            $ref: "#/components/responses/Problem",
+            description: "ORGANIZATION_NOT_FOUND",
+          }
+        "409":
+          { $ref: "#/components/responses/Problem", description: "EMAIL_TAKEN" }
+  /auth/invitations/{token}:
+    get:
+      tags: [invitation]
+      summary: What an invitation is for (before choosing a password)
+      security: []
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          {
+            description: "`{ email, displayName, role, organization, expiresAt }`",
+          }
+        "404":
+          {
+            $ref: "#/components/responses/Problem",
+            description: "INVITATION_NOT_FOUND",
+          }
+  /auth/invitations/accept:
+    post:
+      tags: [invitation]
+      summary: Activate an invited account by choosing a password
       security: []
       requestBody:
         required: true
@@ -157,81 +320,211 @@ paths:
           application/json:
             schema:
               type: object
-              required: [email]
+              required: [token, password]
               properties:
-                email:
-                  {
-                    type: string,
-                    format: email,
-                    description: One of the demo accounts,
-                  }
+                token: { type: string, maxLength: 200 }
+                password: { $ref: "#/components/schemas/Password" }
+                displayName: { type: string, maxLength: 250 }
       responses:
-        "201": { $ref: "#/components/responses/Session" }
+        "200": { $ref: "#/components/responses/Session" }
+        "400": { $ref: "#/components/responses/Invalid" }
         "404":
           {
             $ref: "#/components/responses/Problem",
-            description: DEMO_LOGIN_DISABLED,
+            description: "INVITATION_NOT_FOUND",
+          }
+  /auth/outbox:
+    get:
+      tags: [invitation]
+      summary: Latest queued messages (demo deployments only)
+      security: []
+      responses:
+        "200": { description: "`[{ to, subject, link, kind, createdAt }]`" }
+        "404":
+          {
+            $ref: "#/components/responses/Problem",
+            description: "OUTBOX_DISABLED",
+          }
+  /auth/reset-demo:
+    post:
+      tags: [session]
+      summary: Archive the demo data and seed again (demo deployments, `demo:reset`)
+      responses:
+        "200": { description: "`{ archive }`" }
+        "403": { $ref: "#/components/responses/Problem" }
+        "404":
+          {
+            $ref: "#/components/responses/Problem",
+            description: "DEMO_LOGIN_DISABLED",
+          }
+  /.well-known/jwks.json:
+    get:
+      tags: [keys]
+      summary: Public keys of the access tokens (RS256), for the gateway and the other services
+      security: []
+      responses:
+        "200":
+          description: JWKS
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      keys:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            kty: { const: RSA }
+                            kid: { type: string }
+                            alg: { const: RS256 }
+                            use: { const: sig }
+                            n: { type: string }
+                            e: { type: string }
+  /health:
+    get:
+      summary: Readiness, storage included
+      security: []
+      responses:
+        "200":
+          {
+            description: "`{ status: ok, service, storage, storageLatencyMs, uptimeSeconds }`",
+          }
+        "503":
+          {
+            $ref: "#/components/responses/Problem",
+            description: "STORAGE_UNAVAILABLE",
           }
 components:
   securitySchemes:
     bearer: { type: http, scheme: bearer, bearerFormat: JWT }
   schemas:
+    Envelope:
+      type: object
+      properties:
+        success: { const: true }
+        data: {}
+        requestId: { type: string }
+    Problem:
+      type: object
+      description: RFC 9457 problem details
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, example: "urn:problem:invalid-credentials" }
+        title: { type: string, example: Unauthorized }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+        code: { type: string, example: INVALID_CREDENTIALS }
+        traceId: { type: string }
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string, example: admin.password }
+              code: { type: string, example: INVALID_STRING }
+    Password:
+      type: string
+      minLength: 12
+      maxLength: 128
+      description: >
+        12–128 characters; not a common password (PASSWORD_TOO_COMMON); not built on the account's
+        email (PASSWORD_CONTAINS_EMAIL).
+    Role:
+      type: string
+      enum:
+        [
+          CONTRACT_OWNER,
+          FINANCE_APPROVER,
+          SECONDARY_APPROVER,
+          LEGAL_REVIEWER,
+          ADMIN_AUDITOR,
+          SYSTEM_ADMIN,
+          AUDITOR,
+          SUPPLIER,
+          ORG_ADMIN,
+        ]
+    Login:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, maxLength: 254 }
+        password: { type: string, maxLength: 1024 }
+    Register:
+      type: object
+      required: [organization, admin]
+      properties:
+        organization:
+          type: object
+          required: [name, code, kind]
+          properties:
+            name: { type: string, maxLength: 250 }
+            code:
+              {
+                type: string,
+                maxLength: 40,
+                pattern: "^[A-Za-z0-9][A-Za-z0-9_-]*$",
+              }
+            kind: { enum: [BUYER, SUPPLIER] }
+            email: { type: string, format: email }
+            taxCode: { type: string, maxLength: 14 }
+            address: { type: string, maxLength: 250 }
+        admin:
+          type: object
+          required: [displayName, email, password]
+          properties:
+            displayName: { type: string, maxLength: 250 }
+            email: { type: string, format: email, maxLength: 254 }
+            password: { $ref: "#/components/schemas/Password" }
     Actor:
       type: object
-      required: [id, email, displayName, role, organizationId, permissions]
       properties:
         id: { type: string }
         email: { type: string }
         displayName: { type: string }
-        role:
-          type: string
-          enum:
-            [
-              CONTRACT_OWNER,
-              FINANCE_APPROVER,
-              SECONDARY_APPROVER,
-              LEGAL_REVIEWER,
-              ADMIN_AUDITOR,
-              SYSTEM_ADMIN,
-              AUDITOR,
-              SUPPLIER,
-              ORG_ADMIN,
-            ]
+        role: { $ref: "#/components/schemas/Role" }
         organizationId: { type: string }
         roleChipOrganization: { type: string }
         partyId: { type: [string, "null"] }
         title: { type: string }
         permissions: { type: array, items: { type: string } }
-    Problem:
+    Session:
       type: object
-      required: [statusCode, code]
       properties:
-        statusCode: { type: integer }
-        code:
-          { type: string, description: Business error code, UPPER_SNAKE_CASE }
-        message: { type: string }
-        requestId: { type: string }
+        token:
+          { type: string, description: "same as accessToken (older clients)" }
+        accessToken: { type: string, description: "RS256 JWT, 15 minutes" }
+        refreshToken:
+          {
+            type: string,
+            description: "one use; also set as httpOnly cookie sc_refresh",
+          }
+        refreshExpiresIn: { type: integer, description: "seconds" }
+        user: { $ref: "#/components/schemas/Actor" }
   responses:
     Session:
-      description: Signed in
+      description: Signed in; `Set-Cookie sc_refresh` (HttpOnly, SameSite=Strict, Path=/api/v1/auth)
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              success: { const: true }
-              data:
-                type: object
-                required: [token, user]
-                properties:
-                  token:
-                    {
-                      type: string,
-                      description: "JWT; claims carry the actor (sub, role, org, ...)",
-                    }
-                  user: { $ref: "#/components/schemas/Actor" }
+            allOf:
+              - $ref: "#/components/schemas/Envelope"
+              - properties: { data: { $ref: "#/components/schemas/Session" } }
     Problem:
-      description: Business error
+      description: Error
       content:
-        application/json:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    Invalid:
+      description: >
+        Invalid input: VALIDATION codes per field in `errors[]` (REQUIRED, INVALID_STRING,
+        INVALID_EMAIL, INVALID_OPTION, UNKNOWN_FIELD), or a business rule such as
+        PASSWORD_MINIMUM_12_CHARACTERS, PASSWORD_TOO_COMMON, CURRENT_PASSWORD_INCORRECT,
+        PASSWORD_UNCHANGED, INVALID_OR_EXPIRED_TOKEN
+      content:
+        application/problem+json:
           schema: { $ref: "#/components/schemas/Problem" }
