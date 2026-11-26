@@ -1,7 +1,7 @@
 # Service `identity`
 
 Thẻ của service: AI và người đọc tệp này trước khi sửa mã. Chủ service cập nhật nó trong mỗi PR
-làm đổi phạm vi. Đây là **service mẫu**: các service khác chép cách tổ chức của nó.
+làm đổi phạm vi (luật ở mục 4 của `CLAUDE.md`, CI `pnpm check:docs`). Đây là **service mẫu**: các service khác chép cách tổ chức của nó.
 
 ## Thông tin
 
@@ -11,6 +11,40 @@ làm đổi phạm vi. Đây là **service mẫu**: các service khác chép cá
 | Cổng mặc định | 3001 (`bootstrapService({ port: 3001 })`; `API_PORT`/`PORT` ghi đè) |
 | Schema PostgreSQL | `PG_SCHEMA=identity` |
 | Gọi qua gateway | `/api/v1/auth/*`, `/api/v1/resources/{organizations,users,settings}` |
+
+## Sơ đồ mã
+
+| Tệp | Làm gì |
+| --- | --- |
+| `main.ts` | Module gốc: `AuthController`, `BaseController` (CRUD `/resources`), `PermissionsController`, `AuditExportController`, `HealthController`; guard toàn cục `AuthGuard` rồi `RolesGuard` (thứ tự quan trọng); `bootstrapService({ port: 3001 })`, seed trước khi nghe |
+| `auth.ts` | `AuthService`: `login`, `register` (tổ chức + quản trị), `demoAccounts`/`demoLogin`, `authenticate` (token → tài khoản còn hoạt động, đúng `tokenVersion`), `resetPassword`, `logout` (tăng `tokenVersion`), `seed`; `AuthGuard`; `AuthController` (route `/auth/*`); cờ `SIGNUP`, demo |
+| `seed-directory.ts` | Danh bạ seed: tổ chức `OPS`, các công ty và tài khoản mẫu (`buildDirectory`), tài khoản nổi bật cho màn đăng nhập demo |
+
+## Sơ đồ luồng
+
+```mermaid
+sequenceDiagram
+  participant W as Web (qua gateway)
+  participant A as AuthController
+  participant S as AuthService
+  participant R as Repository (schema identity)
+  W->>A: POST /auth/login { email, password }
+  A->>S: login
+  S->>R: tìm user theo email, active
+  S->>S: bcrypt.compare
+  alt sai hoặc bị khoá
+    S-->>W: 401 INVALID_CREDENTIALS (ghi nhật ký)
+  else đúng
+    S->>R: ghi nhật ký LOGIN
+    S-->>W: { token: signActorToken(actor, tokenVersion), user }
+  end
+  W->>A: GET /auth/me + Bearer
+  A->>S: AuthGuard → authenticate(token)
+  S->>R: user còn active, tokenVersion khớp?
+  S-->>W: actor hoặc 401 INVALID_SESSION
+  W->>A: POST /auth/logout
+  S->>R: tokenVersion + 1 (mọi token cũ hết hiệu lực)
+```
 
 ## Dữ liệu sở hữu
 
