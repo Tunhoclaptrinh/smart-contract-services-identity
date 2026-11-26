@@ -100,7 +100,7 @@
         "key": "partyId",
         "type": "string",
         "maxLength": 250,
-        "label": "Bên Data Pack"
+        "label": "Bên trong dữ liệu mẫu"
       },
       {
         "key": "active",
