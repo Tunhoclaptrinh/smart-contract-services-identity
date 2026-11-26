@@ -135,7 +135,8 @@ khai và kiểm thử; đánh giá; hạn chế.
 | 1.6 Ràng buộc pháp lý | trần phạt, chữ ký điện tử, hoá đơn, không giữ tiền | 0,5 | `DINH_VI_SAN_PHAM.md` §4.2 | | TV2 | |
 | **2. Kiến trúc** | | **8** | | | TV1 chủ trì | |
 | 2.1 Hiện trạng ban đầu và vì sao tách | CodeCash monolith; tải thật; lý do thật | 1,5 | `LUAN_CU_KIEN_TRUC.md` §1 | kiến trúc cũ | TV1 | |
-| 2.2 Sơ đồ một trang, bảng service – dữ liệu – trách nhiệm | | 1,5 | `HE_THONG.md` §1–2, `LUAN_CU_KIEN_TRUC.md` §2 | toàn cảnh | TV1 | |
+| 2.2 Sơ đồ một trang, bảng service – dữ liệu – trách nhiệm | | 1,5 | `HE_THONG.md` §1–2 | toàn cảnh | TV1 | |
+| 2.2a Vì sao chia đúng 6 service | sáu tiêu chí, số đo lịch sử mã, kịch bản thay đổi và sự cố, so sánh 4 phương án, ranh giới yếu | 2 | `LUAN_CU_KIEN_TRUC.md` §2 | bảng §2.6 | TV1 |
 | 2.3 Gateway và xác thực ba lớp | RS256, JWKS, refresh, giới hạn | 1,5 | `gateway/README.md`, `HE_THONG.md` §3 | token ba lớp | TV1 | |
 | 2.4 Đồng bộ, bất đồng bộ, đồ thị phụ thuộc | | 1,5 | `LUAN_CU_KIEN_TRUC.md` §3, §5 | đồ thị phụ thuộc | TV6 | |
 | 2.5 Các luồng chính | L1–L8 | 2 | `LUAN_CU_KIEN_TRUC.md` §8 | L3, L4 + ảnh màn | mỗi người luồng của mình | |
@@ -237,7 +238,9 @@ Câu trả lời gợi ý ngắn; đọc thêm ở tệp ghi bên cạnh.
 | Câu hỏi | Trả lời gợi ý | Đọc |
 | --- | --- | --- |
 | Tải nhỏ vậy sao phải microservices? | Đúng, monolith đủ; tách vì ranh giới rủi ro, phụ thuộc ngoài, engine Python, làm song song; nhóm trả giá bằng saga, outbox, idempotency | `LUAN_CU_KIEN_TRUC.md` §1 |
-| Vì sao 6 service, không 3 hay 10? | bảng "nếu gộp thì sao" | `LUAN_CU_KIEN_TRUC.md` §2 |
+| Vì sao 6 service, không 3 hay 10? | mỗi service khác các service khác ở ≥ 3 trong 6 tiêu chí; 47% thay đổi trong lịch sử mã nằm gọn một vùng; gộp thô thì lỗi ngân hàng và cập nhật luật kéo cả phần thực hiện, chia theo bảng thì phê duyệt cần 3–4 lời gọi và phá dòng sự kiện của mốc | `LUAN_CU_KIEN_TRUC.md` §2.1, §2.2, §2.6 |
+| contract và execution hay sửa cùng nhau, sao vẫn tách? | đúng, đó là ranh giới yếu nhất (20% đổi một mình); giảm bằng gói hợp đồng có phiên bản là hợp đồng duy nhất giữa hai bên, không chung kiểu; có dấu hiệu để gộp lại nếu vẫn dính | `LUAN_CU_KIEN_TRUC.md` §2.5, §2.8 |
+| Thực tế có ai tách như vậy không? | ký số, thanh toán, hoá đơn điện tử, lưu nhật ký vốn là các hệ riêng nối qua API; signing, payment, audit trùng các đường nối đó | `LUAN_CU_KIEN_TRUC.md` §2.7 |
 | Service A cần dữ liệu của B thì sao? | gọi API qua `ServiceClient` hoặc nhận sự kiện; không đọc database của nhau; execution giữ ảnh chụp hợp đồng | `LUAN_CU_KIEN_TRUC.md` §2–3 |
 | Sao không dùng hàng đợi cho chi tiền? | người duyệt cần kết quả ngay; trường hợp không chắc đã có PENDING và đối soát | `LUAN_CU_KIEN_TRUC.md` §6 |
 | Decision sập thì sao? | chứng từ vẫn lưu (201), mốc `PENDING_EVALUATION`, job chấm lại; F1 có số liệu | `PHAN_TICH_THIET_KE.md` §8, §9 |

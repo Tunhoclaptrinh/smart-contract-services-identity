@@ -67,7 +67,7 @@ hợp đồng đã ký (gói v1), contract giữ bản đang soạn; decision **
 trọn gói dữ kiện của mốc trong request. **Tiền** mọi nơi là chuỗi số nguyên đồng (`…Vnd`, D3); cách
 làm tròn tiền phạt chờ quyết định D4.
 
-**Vì sao chia như vậy**: soạn thảo, ký, thực hiện, quyết định, chi tiền, kiểm toán có dữ liệu sở
+**Vì sao chia như vậy** (bằng chứng đầy đủ: `LUAN_CU_KIEN_TRUC.md` §2): soạn thảo, ký, thực hiện, quyết định, chi tiền, kiểm toán có dữ liệu sở
 hữu, tần suất đổi và rủi ro khác nhau (giá trị pháp lý của chữ ký khác an toàn dòng tiền; engine là
 Python đã kiểm chứng trên 405 mốc của dữ liệu mẫu). **Vì sao không nhỏ hơn**: tách phê duyệt khỏi chứng từ, hay
 tài liệu khỏi ký, làm mỗi lần chấm mốc hoặc mỗi lượt ký phải gọi chéo mà không giảm rủi ro nào.
