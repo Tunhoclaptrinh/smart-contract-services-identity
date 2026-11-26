@@ -61,6 +61,7 @@ sequenceDiagram
 | `POST /auth/login` | công khai | 401 `INVALID_CREDENTIALS` |
 | `POST /auth/register` | công khai (tắt bằng `SIGNUP=false`) | 400 `INVALID_EMAIL`, `PASSWORD_MINIMUM_12_CHARACTERS`, `INVALID_ORGANIZATION_KIND`; 409 `EMAIL_TAKEN`, `ORGANIZATION_CODE_TAKEN`; 404 `SIGNUP_DISABLED` |
 | `GET /auth/demo-accounts`, `POST /auth/demo-login` | công khai, chỉ khi bật demo | 404 `DEMO_LOGIN_DISABLED` |
+| `GET /.well-known/jwks.json` | công khai | — (khoá công khai RS256 cho gateway và service khác) |
 | `GET /auth/me` | đã đăng nhập | 401 `INVALID_SESSION` |
 | `POST /auth/logout` | đã đăng nhập | — (thu hồi mọi token cũ) |
 | `POST /auth/users/:id/password` | `users:reset-password` | 404 `USER_NOT_FOUND`; 403 khi `ORG_ADMIN` đụng tài khoản không được quản |
@@ -69,8 +70,8 @@ sequenceDiagram
 
 ## Token
 
-Identity ký token bằng `signActorToken` (chassis): người gọi nằm trong claims, các service khác
-kiểm chữ ký bằng `JwtAuthGuard` mà không gọi identity. Riêng identity (`AuthGuard`) kiểm thêm tài
+Identity ký token RS256 bằng `signActorToken` (chassis, khoá `JWT_PRIVATE_KEY`) và công bố khoá công khai ở `/.well-known/jwks.json`: người gọi nằm trong claims, các service khác
+kiểm chữ ký bằng `JwtAuthGuard` (khoá từ `JWKS_URL`) mà không gọi identity. Riêng identity (`AuthGuard`) kiểm thêm tài
 khoản còn hoạt động và `tokenVersion` (đổi mật khẩu, đăng xuất, khoá tài khoản làm mọi token cũ
 hết hiệu lực ở identity ngay; ở service khác hết khi token hết hạn `TOKEN_TTL`).
 

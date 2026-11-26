@@ -29,7 +29,8 @@ import {
   normalizeField,
   repoRoot,
   bearerToken,
-  jwtSecret,
+  publicJwks,
+  signingKey,
   signActorToken,
   verifyActorToken,
 } from "@sc/nest-common";
@@ -80,7 +81,7 @@ const organizationFields = (): FieldRule[] => {
 @Injectable()
 export class AuthService {
   constructor(@Inject(Repository) private repo: Repository) {
-    jwtSecret(); // fails fast in production without JWT_SECRET
+    signingKey(); // fails fast in production without JWT_PRIVATE_KEY
   }
   actor(record: RecordEntity): Actor {
     return {
@@ -507,6 +508,13 @@ export class AuthGuard implements CanActivate {
     const context = auditContext.getStore();
     if (context) context.actor = req.user;
     return true;
+  }
+}
+/** Public keys of the access tokens, for the gateway and the other services (JWKS_URL). */
+@Controller(".well-known")
+export class JwksController {
+  @Public() @Get("jwks.json") jwks() {
+    return publicJwks();
   }
 }
 @Controller("auth")

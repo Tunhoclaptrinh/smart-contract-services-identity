@@ -10,7 +10,7 @@ import {
   Repository,
   RolesGuard,
 } from "@sc/nest-common";
-import { AuthController, AuthGuard, AuthService } from "./auth";
+import { AuthController, AuthGuard, AuthService, JwksController } from "./auth";
 
 /**
  * Identity service: companies, accounts, sign-in and sign-up. It signs the access tokens every
@@ -21,6 +21,7 @@ import { AuthController, AuthGuard, AuthService } from "./auth";
   controllers: [
     HealthController,
     AuthController,
+    JwksController,
     BaseController,
     PermissionsController,
     AuditExportController,
