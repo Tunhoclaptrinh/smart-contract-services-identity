@@ -14,7 +14,14 @@ import {
   generateKeyPairSync,
   type KeyObject,
 } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  linkSync,
+  mkdirSync,
+  readFileSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, resolve } from "node:path";
 import { repoRoot } from "./paths";
 import { auditContext } from "./audit-events";
@@ -62,11 +69,21 @@ export function signingKey() {
       const { privateKey } = generateKeyPairSync("rsa", {
         modulusLength: 2048,
       });
+      // Written whole, then linked into place: processes starting together (parallel tests,
+      // several local services) end up with the same key, never a half-written file.
+      const temp = `${file}.${process.pid}.${Date.now()}`;
       writeFileSync(
-        file,
+        temp,
         privateKey.export({ format: "pem", type: "pkcs8" }) as string,
-        { mode: 0o600, flag: "wx" },
+        { mode: 0o600 },
       );
+      try {
+        linkSync(temp, file);
+      } catch (error) {
+        if ((error as { code?: string }).code !== "EEXIST") throw error;
+      } finally {
+        unlinkSync(temp);
+      }
     }
     text = readFileSync(file, "utf8");
   }
