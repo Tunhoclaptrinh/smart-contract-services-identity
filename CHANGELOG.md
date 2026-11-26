@@ -2,6 +2,7 @@
 
 Mỗi bước dựng phần nền ghi một mục; mới nhất ở trên.
 
+- **docs: the stack runs** — `docs/HE_THONG.md`: gateway và identity chạy được, database riêng từng service, mục 6 "Chạy cả hệ" (compose, Newman, cách thêm service)
 - **ci: run the whole stack and the Postman collection** — job `stack` (repo cha, khi có `compose.yaml`): checkout repo service cạnh repo cha, `docker compose up --build --wait`, Newman chạy `postman/`; lỗi thì in log compose (MS-R7, MS-R8, MS-B4)
 - **feat(infra): one database and one login per service** — `infra/postgres-init.sql` tạo database và tài khoản riêng cho từng service, thu quyền kết nối chéo (MS-R2); `compose.yaml` của nhánh `main` gắn nó vào Postgres
 - **build: lint, format and test the gateway too when it exists** — `lint`, `format`, `format:check`, `test` gồm `gateway/` (nhánh `main` của repo cha); không có thư mục đó thì bỏ qua
