@@ -16,6 +16,36 @@ chấm lại mốc; ai cũng thấy "việc còn lại" của mình.
 `../NHIEM_VU.md`; `../LUAN_CU_KIEN_TRUC.md` §2.9, §8 L4–L5; `../PHAN_TICH_THIET_KE.md` §5.2, §6, §8 (S3);
 `../TAN_DUNG_CODECASH.md` §4.3; `../../codecash/docs/09_VIEC_CON_LAI_VA_HOP_VIEC.md`.
 
+## Mã cũ để xem và chuyển
+
+Đường dẫn tính từ thư mục repo của bạn (thư mục `codecash` nằm cạnh). Mở AI trong repo của bạn là nó đọc
+được các đường dẫn này. Giữ, chỉnh hay bỏ từng phần: ``../TAN_DUNG_CODECASH.md` §4.3`; bảng đầy đủ đến từng tệp:
+`../DOI_CHIEU_CODECASH.md` (backend), `btl-frontend/docs/DOI_CHIEU_CODECASH.md` (web).
+
+| Loại | Đường dẫn | Xem để |
+| --- | --- | --- |
+| Backend | `../codecash/apps/api/src/domain/records.ts` | bảng nghiệp vụ |
+| Backend | `../codecash/apps/api/src/domain/context.ts` | đọc theo người gọi |
+| Backend | `../codecash/apps/api/src/domain/service.ts` | ghi trong một giao dịch |
+| Backend | `../codecash/apps/api/src/domain/datapack.ts` | nạp dữ liệu mẫu |
+| Backend | `../codecash/apps/api/src/domain/actions` | chứng từ, nghiệm thu, phê duyệt, tranh chấp, ngoại lệ, phụ lục, thanh lý (giữ logic) |
+| Backend | `../codecash/apps/api/src/domain/views` | việc cần làm, trách nhiệm, mốc, hợp đồng, tổng quan (giữ) |
+| Backend | `../codecash/apps/api/src/domain/vocabulary.ts` | bên nào được tạo chứng từ gì |
+| Backend | `../codecash/apps/api/src/domain/engine-contract.ts` | gói dữ kiện gửi engine (đổi thành gọi HTTP sang decision) |
+| Backend | `../codecash/apps/api/src/workflow.controller.ts` | route cũ dạng RPC: lấy logic, đổi sang REST |
+| Web | `../codecash/apps/web/src/features/milestones/pages/TaskInboxPage.tsx` | việc cần làm |
+| Web | `../codecash/apps/web/src/features/milestones/pages/ContractDetailPage.tsx` | chi tiết hợp đồng và mốc |
+| Web | `../codecash/apps/web/src/features/milestones/pages/EvidenceSubmissionPage.tsx` | nộp chứng từ |
+| Web | `../codecash/apps/web/src/features/milestones/components` | `PendingItems`, `MilestoneJourney`, `InvoiceFormModal`, `EvidenceViewer`, `AmendmentsPanel`, `LiquidationPanel`… |
+| Web | `../codecash/apps/web/src/features/disputes` | tranh chấp |
+| Web | `../codecash/apps/web/src/features/audit/pages/ExceptionQueuePage.tsx` | hàng chờ ngoại lệ |
+| Test | `../codecash/tests/foundation/workflow.test.mjs` | luồng chứng từ, phê duyệt, tranh chấp |
+| Test | `../codecash/tests/foundation/business-rules.test.mjs` | quy tắc BR-B |
+| Tài liệu | `../codecash/docs/09_VIEC_CON_LAI_VA_HOP_VIEC.md` | việc còn lại, hộp việc |
+| Tài liệu | `../codecash/docs/11_HOP_DONG_TRONG_UNG_DUNG.md` | bước 7–10: chứng từ, duyệt chi, phụ lục, thanh lý |
+| Tài liệu | `../codecash/docs/33_LUONG_NGHIEP_VU_DAU_CUOI.md` | câu chuyện đầu–cuối |
+| Ảnh | `../codecash/apps/web/public/guide/images` | `tasks*`, `contract-detail*`, `evidence*`, `approval*`, `dispute*`, `exception*`, `amendment-*`, `liquidation-review` |
+
 ## Việc theo thứ tự
 
 | # | Việc | Xong khi |

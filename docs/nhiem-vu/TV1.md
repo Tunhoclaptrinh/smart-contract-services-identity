@@ -11,6 +11,23 @@
 **Mục tiêu**: giữ phần nền chạy, gỡ vướng cho mọi người trong ngày, nối từng service vào hệ chung, giữ
 lịch và phạm vi.
 
+## Mã cũ để xem và chuyển
+
+Đường dẫn tính từ thư mục repo của bạn (thư mục `codecash` nằm cạnh). Mở AI trong repo của bạn là nó đọc
+được các đường dẫn này. Giữ, chỉnh hay bỏ từng phần: ``../TAN_DUNG_CODECASH.md` §2, §5 (platform)`; bảng đầy đủ đến từng tệp:
+`../DOI_CHIEU_CODECASH.md` (backend), `btl-frontend/docs/DOI_CHIEU_CODECASH.md` (web).
+
+| Loại | Đường dẫn | Xem để |
+| --- | --- | --- |
+| Web | `../codecash/apps/web/src/features/platform/ResourcePage.tsx` | màn quản trị dùng chung (tổ chức, người dùng); đã chuyển, làm tiếp phần còn thiếu |
+| Web | `../codecash/apps/web/src/features/platform/PermissionMatrixPage.tsx` | ma trận quyền |
+| Web | `../codecash/apps/web/src/shared/layout` | khung, menu theo vai trò (đã chuyển vào phần nền web) |
+| Backend | `../codecash/apps/api/src/auth.ts` | đăng nhập cũ (đã chuyển thành identity) |
+| Backend | `../codecash/apps/api/src/common` | chassis cũ (đã chuyển thành `packages/nest-common`) |
+| Tài liệu | `../codecash/docs/30_HUONG_DAN_TIEP_QUAN_VA_PHAT_TRIEN_TIEP.md` | tiếp quản, hướng phát triển (chương 7 báo cáo) |
+| Tài liệu | `../codecash/docs/bpmn/luong-tong-the-theo-vai-tro.drawio` | sơ đồ luồng theo vai trò cho báo cáo |
+| Ảnh | `../codecash/apps/web/public/guide/images` | `login*`, `nav-*`, `admin-*`: trạng thái cần chụp lại |
+
 ## Việc theo thứ tự
 
 | # | Việc | Xong khi |

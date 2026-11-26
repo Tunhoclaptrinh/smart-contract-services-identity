@@ -17,6 +17,32 @@ tài khoản.
 `../NHIEM_VU.md`; `../LUAN_CU_KIEN_TRUC.md` §2.1c (vì sao ký và xác minh là một service), §8 L3;
 `../PHAN_TICH_THIET_KE.md` §6, §8 (S1); `../TAN_DUNG_CODECASH.md` §4.2; `../../codecash/docs/10_DICH_VU_KY_SO.md`.
 
+## Mã cũ để xem và chuyển
+
+Đường dẫn tính từ thư mục repo của bạn (thư mục `codecash` nằm cạnh). Mở AI trong repo của bạn là nó đọc
+được các đường dẫn này. Giữ, chỉnh hay bỏ từng phần: ``../TAN_DUNG_CODECASH.md` §4.2`; bảng đầy đủ đến từng tệp:
+`../DOI_CHIEU_CODECASH.md` (backend), `btl-frontend/docs/DOI_CHIEU_CODECASH.md` (web).
+
+| Loại | Đường dẫn | Xem để |
+| --- | --- | --- |
+| Backend | `../codecash/apps/api/src/domain/signing.ts` | phiên ký, lượt ký đúng thứ tự |
+| Backend | `../codecash/apps/api/src/domain/signing-layout.ts` | vị trí ký trên trang |
+| Backend | `../codecash/apps/api/src/signing-service.ts` | gọi nhà ký |
+| Backend | `../codecash/apps/api/src/trust/remote-signer.ts` | ký từ xa |
+| Backend | `../codecash/apps/api/src/trust/signing-provider.ts` | giao diện nhà cung cấp ký (gốc cho adapter) |
+| Backend | `../codecash/apps/api/src/trust/crypto.ts` | băm, ký, kiểm chữ ký |
+| Backend | `../codecash/apps/api/src/documents.ts` | kho tài liệu theo SHA-256 |
+| Backend | `../codecash/apps/api/src/pdf-layout.ts` | dựng văn bản PDF |
+| Backend | `../codecash/apps/api/src/document-preview.ts` | xem trước tài liệu |
+| Backend | `../codecash/apps/api/src/evidence-store.ts` | lưu tệp chứng từ (execution gọi sang) |
+| Nhà ký mô phỏng | `../codecash/apps/signer/src` | tiến trình riêng: ký, QR, điện thoại; thành `simulator/` |
+| Web | `../codecash/apps/web/src/features/signing/pages` | vị trí ký, trình tự, cách ký, thiết bị, xác minh |
+| Web | `../codecash/apps/web/src/features/signing/device` | ký trên thiết bị |
+| Test | `../codecash/tests/foundation/signer.test.mjs` | ca ký đúng, sai lượt, ký lại |
+| Tài liệu | `../codecash/docs/10_DICH_VU_KY_SO.md` | luồng ký, bảo mật, xử lý lỗi, chuyển sang ký thật |
+| Tài liệu | `../codecash/docs/NGHIEP_VU.md` | §11 ký số và tài liệu |
+| Ảnh | `../codecash/apps/web/public/guide/images` | `signing-*`, `sign-*`, `verify`, `review-signature-*` |
+
 ## Việc theo thứ tự
 
 | # | Việc | Xong khi |

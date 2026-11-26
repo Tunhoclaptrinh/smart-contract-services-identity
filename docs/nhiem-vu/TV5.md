@@ -16,6 +16,37 @@ luật; lệnh chi chỉ tạo từ quyết định trả tiền, không bao gi�
 `../NHIEM_VU.md`; `../LUAN_CU_KIEN_TRUC.md` §2.1b, §8 L6; `../PHAN_TICH_THIET_KE.md` §6, §7, §8 (S4);
 `../TAN_DUNG_CODECASH.md` §4.4–4.5; `../../codecash/docs/NGHIEP_VU.md` §5–7.
 
+## Mã cũ để xem và chuyển
+
+Đường dẫn tính từ thư mục repo của bạn (thư mục `codecash` nằm cạnh). Mở AI trong repo của bạn là nó đọc
+được các đường dẫn này. Giữ, chỉnh hay bỏ từng phần: ``../TAN_DUNG_CODECASH.md` §4.4–4.5`; bảng đầy đủ đến từng tệp:
+`../DOI_CHIEU_CODECASH.md` (backend), `btl-frontend/docs/DOI_CHIEU_CODECASH.md` (web).
+
+| Loại | Đường dẫn | Xem để |
+| --- | --- | --- |
+| Engine | `../codecash/apps/engine/codecash_engine` | 9 bước chấm một mốc (`pipeline.py`), luật, tính tiền, vết |
+| Engine | `../codecash/apps/engine/policy` | bộ luật, profile |
+| Engine | `../codecash/apps/engine/server.py` | máy chủ cũ (thay bằng FastAPI) |
+| Engine | `../codecash/apps/engine/rule_language.json` | ngôn ngữ luật |
+| Backend | `../codecash/apps/api/src/domain/engine.ts` | cách API cũ gọi engine |
+| Backend | `../codecash/apps/api/src/domain/policy.ts` | áp phiên bản luật |
+| Backend | `../codecash/apps/api/src/trust/rules-service.ts` | quản lý phiên bản luật (viết lại bằng Python) |
+| Backend | `../codecash/apps/api/src/trust/rule-workflows.ts` | quy trình của phiên bản luật |
+| Backend | `../codecash/apps/api/src/domain/views/verification.ts` | chạy thử, gói kiểm chứng |
+| Backend | `../codecash/apps/api/src/domain/actions/payments.ts` | lập lệnh chi |
+| Backend | `../codecash/apps/api/src/payment-gateway.ts` | gửi lệnh ra ngân hàng (thành ngân hàng mô phỏng) |
+| Web | `../codecash/apps/web/src/features/milestones/pages/MilestoneDecisionPage.tsx` | truy vết quyết định |
+| Web | `../codecash/apps/web/src/features/milestones/components/DecisionTrace.tsx` | gốc cho Compound `<DecisionTrace>` (cùng `RulesPanel`, `VariablesPanel`, `ReplayPanel`) |
+| Web | `../codecash/apps/web/src/features/milestones/pages/PaymentApprovalPage.tsx` | duyệt chi (cùng `PaymentInstructionPanel`) |
+| Web | `../codecash/apps/web/src/features/platform/RuleVersionsPage.tsx` | phiên bản luật (cùng `components/RuleExpressionEditor.tsx`) |
+| Web | `../codecash/apps/web/src/features/platform/DataPage.tsx` | gốc cho màn "Kiểm chứng bộ luật" |
+| Test | `../codecash/tests` | `test_*.py`, `golden/`: bộ kiểm hồi quy, phải xanh |
+| Công cụ | `../codecash/tools/verify_decision.py` | kiểm độc lập một quyết định |
+| Công cụ | `../codecash/tools/mutation_check.py` | kiểm đột biến |
+| Tài liệu | `../codecash/docs/NGHIEP_VU.md` | §5–7 engine, luật, tính tiền; §14.1, §14.2 |
+| Tài liệu | `../codecash/docs/pitch/GIAI_THICH_SO_LIEU_PITCH.md` | số liệu độ đúng của engine (cho chương đánh giá) |
+| Ảnh | `../codecash/apps/web/public/guide/images` | `decision*`, `rules-*`, `transfer`, `data*` |
+
 ## Việc theo thứ tự
 
 | # | Việc | Xong khi |

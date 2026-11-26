@@ -73,6 +73,8 @@ cho AI: `KICH_BAN_VIBE_CODE.md` §7.
 
 ### Bước 3. Làm song song, không chờ nhau (28/11–03/12)
 
+- **Mã cũ của phần bạn** (backend, màn web, test, tài liệu, ảnh màn hình) có sẵn đường dẫn trong mục
+  "Mã cũ để xem và chuyển" của thẻ nhiệm vụ; mở xem trước khi viết, chép rồi sửa thay vì viết lại.
 - **Backend**: chuyển mã cũ theo checklist `TRIEN_KHAI_NHOM.md` §4.1. Service khác chưa xong thì giả nó
   bằng server HTTP tạm trong test (mẫu: `packages/nest-common/test/service-client.test.mjs`). Token
   trong test tự ký bằng `signActorToken`.
@@ -137,6 +139,7 @@ của mình. Phần nền chỉ nhóm trưởng sửa; bạn cần gì ở phầ
 | Cần | Đọc |
 | --- | --- |
 | Việc của riêng bạn, đủ chi tiết | `docs/nhiem-vu/TV<số>.md` |
+| Mã cũ của phần bạn ở đâu | thẻ nhiệm vụ, mục "Mã cũ để xem và chuyển"; bảng đầy đủ `DOI_CHIEU_CODECASH.md` |
 | Toàn cảnh hệ thống | `HE_THONG.md` |
 | Quy tắc nghiệp vụ, API, saga | `PHAN_TICH_THIET_KE.md` |
 | Vì sao thiết kế như vậy (để trả lời vấn đáp) | `LUAN_CU_KIEN_TRUC.md` |

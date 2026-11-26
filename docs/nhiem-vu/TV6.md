@@ -15,6 +15,29 @@ sự kiện không mất, message hỏng không chặn hàng đợi; người d�
 `../NHIEM_VU.md`; `../LUAN_CU_KIEN_TRUC.md` §3, §6 (hàng đợi), §8 L7; `../PHAN_TICH_THIET_KE.md` §7, §9;
 `../TAN_DUNG_CODECASH.md` §4.6.
 
+## Mã cũ để xem và chuyển
+
+Đường dẫn tính từ thư mục repo của bạn (thư mục `codecash` nằm cạnh). Mở AI trong repo của bạn là nó đọc
+được các đường dẫn này. Giữ, chỉnh hay bỏ từng phần: ``../TAN_DUNG_CODECASH.md` §4.6`; bảng đầy đủ đến từng tệp:
+`../DOI_CHIEU_CODECASH.md` (backend), `btl-frontend/docs/DOI_CHIEU_CODECASH.md` (web).
+
+| Loại | Đường dẫn | Xem để |
+| --- | --- | --- |
+| Backend | `../codecash/apps/api/src/trust/service.ts` | neo chuỗi băm |
+| Backend | `../codecash/apps/api/src/trust/anchor-provider.ts` | nơi neo |
+| Backend | `../codecash/apps/api/src/trust/timestamp.ts` | dấu thời gian |
+| Backend | `../codecash/apps/api/src/domain/views/integrity.ts` | kiểm toàn vẹn |
+| Backend | `../codecash/apps/api/src/domain/views/activity.ts` | nhật ký hoạt động |
+| Backend | `../codecash/apps/api/src/notifications.ts` | thông báo theo người |
+| Web | `../codecash/apps/web/src/features/audit/pages` | nhật ký, toàn vẹn |
+| Web | `../codecash/apps/web/src/features/dashboard` | tổng quan, biểu đồ, lịch tới hạn |
+| Web | `../codecash/apps/web/src/shared/layout/NotificationDrawer.tsx` | ngăn thông báo (cùng `useNotifications.ts`) |
+| Test | `../codecash/tests/foundation/trust.test.mjs` | chuỗi băm, neo |
+| Test | `../codecash/tests/foundation/notifications.test.mjs` | thông báo |
+| Công cụ | `../codecash/tools/verify_audit.py` | bộ kiểm nhật ký độc lập (dùng khi demo kiểm toán) |
+| Script | `../codecash/scripts/guide-screenshots.mjs` | chụp màn hình tự động: chuyển sang web |
+| Ảnh | `../codecash/apps/web/public/guide/images` | `integrity`, `activity`, `dashboard*`, `notifications` |
+
 ## Việc theo thứ tự
 
 | # | Việc | Xong khi |

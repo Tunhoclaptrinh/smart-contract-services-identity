@@ -15,6 +15,31 @@
 `../NHIEM_VU.md`; `../PHAN_TICH_THIET_KE.md` §3, §4 (BR-A), §5.1 (máy trạng thái), §6 (API contract);
 `../TAN_DUNG_CODECASH.md` §4.1; `../../codecash/docs/11_HOP_DONG_TRONG_UNG_DUNG.md` bước 1–6.
 
+## Mã cũ để xem và chuyển
+
+Đường dẫn tính từ thư mục repo của bạn (thư mục `codecash` nằm cạnh). Mở AI trong repo của bạn là nó đọc
+được các đường dẫn này. Giữ, chỉnh hay bỏ từng phần: ``../TAN_DUNG_CODECASH.md` §4.1`; bảng đầy đủ đến từng tệp:
+`../DOI_CHIEU_CODECASH.md` (backend), `btl-frontend/docs/DOI_CHIEU_CODECASH.md` (web).
+
+| Loại | Đường dẫn | Xem để |
+| --- | --- | --- |
+| Backend | `../codecash/apps/api/src/domain/drafts.ts` | vòng đời bản nháp, mốc, chuyển trạng thái (tách ba tệp) |
+| Backend | `../codecash/apps/api/src/domain/templates.ts` | các giai đoạn theo loại hợp đồng |
+| Backend | `../codecash/apps/api/src/domain/contract-templates.ts` | mẫu hợp đồng |
+| Backend | `../codecash/apps/api/src/domain/contract-rules.ts` | luật riêng của từng hợp đồng |
+| Backend | `../codecash/apps/api/src/domain/late-payment.ts` | lãi chậm trả |
+| Backend | `../codecash/apps/api/src/trust/extraction-service.ts` | đề xuất trích xuất điều khoản (giữ luồng xác nhận tay) |
+| Backend | `../codecash/apps/api/src/domain/types.ts` | kiểu cũ: chỉ lấy phần của contract, không chép cả tệp |
+| Web | `../codecash/apps/web/src/features/contracts/pages/ContractListPage.tsx` | danh sách hợp đồng |
+| Web | `../codecash/apps/web/src/features/contracts/pages/ContractUploadPage.tsx` | soạn hợp đồng (wizard) |
+| Web | `../codecash/apps/web/src/features/contracts/components` | các phần của wizard |
+| Web | `../codecash/apps/web/src/features/signing/pages/DigitizeReviewPage.tsx` | số hoá mốc, luật riêng |
+| Web | `../codecash/apps/web/src/features/signing/components/MilestoneEditor.tsx` | sửa mốc (gốc cho `<MilestoneBuilder>`) |
+| Test | `../codecash/tests/foundation/business-rules.test.mjs` | phần bản nháp: ca đúng, ca sai đã có |
+| Tài liệu | `../codecash/docs/11_HOP_DONG_TRONG_UNG_DUNG.md` | bước 1–6: soạn, văn bản, trích xuất, số hoá, chỉnh tay, khoá |
+| Tài liệu | `../codecash/docs/NGHIEP_VU.md` | §4 vòng đời, §6.2a, §6.3, §14.4 |
+| Ảnh | `../codecash/apps/web/public/guide/images` | `upload-*`, `review-*`, `admin-contract-templates`, `admin-template-editor` |
+
 ## Việc theo thứ tự
 
 | # | Việc | Xong khi |
