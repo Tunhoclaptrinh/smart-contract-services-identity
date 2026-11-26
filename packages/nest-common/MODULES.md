@@ -21,7 +21,7 @@ gốc.
 
 | Tệp | Làm gì | Dùng |
 | --- | --- | --- |
-| `auth-token.ts` | JWT RS256: identity ký bằng `JWT_PRIVATE_KEY`, công bố `publicJwks()`; nơi khác kiểm bằng `JWT_PUBLIC_KEY` hoặc `JWKS_URL` (tự tải lại khi gặp `kid` lạ); dev tự sinh khoá ở `.data-jwt`; `JwtAuthGuard` đặt `req.user` từ claims, không gọi identity | `signActorToken`, `verifyActorTokenAsync`, `JwtAuthGuard`, `publicJwks` |
+| `auth-token.ts` | JWT RS256: identity ký bằng `JWT_PRIVATE_KEY`, công bố `publicJwks()`; nơi khác kiểm bằng `JWT_PUBLIC_KEY` hoặc `JWKS_URL` (tự tải lại khi gặp `kid` lạ); dev tự sinh khoá ở `.data-jwt` (production chỉ khi `JWT_GENERATE_KEY=true`); `JwtAuthGuard` đặt `req.user` từ claims, không gọi identity | `signActorToken`, `verifyActorTokenAsync`, `JwtAuthGuard`, `publicJwks` |
 | `permissions.ts` | Ma trận quyền từ `packages/contracts/permissions.json`, phạm vi `all`/`own` | `@RequirePermission("x:read")`, `can(role, key)`, `scopeOf` |
 | `roles.ts`, `guards/roles.guard.ts`, `decorators/*` | Vai trò, `@Public()`, `@Roles()`, `@CurrentUser()`, `@TenantId()` | decorator trên controller |
 | `permissions.controller.ts` | `GET /permissions`: xem ma trận quyền (cần `permissions:read`) | thêm vào module |

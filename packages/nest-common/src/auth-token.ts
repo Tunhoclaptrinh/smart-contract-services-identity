@@ -62,7 +62,9 @@ export function signingKey() {
   if (signing && (!pem || signing.pem === pem)) return signing;
   let text = pem;
   if (!text) {
-    if (production()) throw new Error("JWT_PRIVATE_KEY is required");
+    // A self-contained demo stack (docker compose) may opt in to a key kept on its volume.
+    if (production() && process.env.JWT_GENERATE_KEY !== "true")
+      throw new Error("JWT_PRIVATE_KEY is required (or JWT_GENERATE_KEY=true)");
     const file = keyFile();
     if (!existsSync(file)) {
       mkdirSync(dirname(file), { recursive: true });
@@ -101,7 +103,11 @@ function loadStaticKeys() {
   const pem = process.env.JWT_PUBLIC_KEY?.replace(/\\n/g, "\n");
   if (pem) addPublicKey(createPublicKey(pem));
   // Identity itself, and any service in development: the local signing key verifies too.
-  if (process.env.JWT_PRIVATE_KEY || (!production() && existsSync(keyFile())))
+  if (
+    process.env.JWT_PRIVATE_KEY ||
+    ((!production() || process.env.JWT_GENERATE_KEY === "true") &&
+      existsSync(keyFile()))
+  )
     addPublicKey(createPublicKey(signingKey().key));
 }
 
