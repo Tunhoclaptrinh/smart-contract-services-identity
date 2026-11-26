@@ -131,7 +131,7 @@ khai và kiểm thử; đánh giá; hạn chế.
 | 1.2 Dữ liệu mẫu | Data Pack là gì, dùng vào đâu | 0,5 | `DINH_VI_SAN_PHAM.md` §5 | ERD Data Pack | TV4 | |
 | 1.3 Vai trò và luồng tổng thể | 9 vai trò + khách | 1,5 | `PHAN_TICH_THIET_KE.md` §2 | BPMN theo vai trò | TV1 | |
 | 1.4 Phạm vi | MoSCoW | 0,5 | `PHAN_TICH_THIET_KE.md` §1 | | TV2 | |
-| 1.5 Quy tắc nghiệp vụ | bảng 25 quy tắc có mã lỗi (MS-R1) | 2 | `PHAN_TICH_THIET_KE.md` §4 | | TV2 gom, mỗi người viết quy tắc của mình | |
+| 1.5 Quy tắc nghiệp vụ | bảng 26 quy tắc có mã lỗi (MS-R1) | 2 | `PHAN_TICH_THIET_KE.md` §4 | | TV2 gom, mỗi người viết quy tắc của mình | |
 | 1.6 Ràng buộc pháp lý | trần phạt, chữ ký điện tử, hoá đơn, không giữ tiền | 0,5 | `DINH_VI_SAN_PHAM.md` §4.2 | | TV2 | |
 | **2. Kiến trúc** | | **8** | | | TV1 chủ trì | |
 | 2.1 Hiện trạng ban đầu và vì sao tách | CodeCash monolith; tải thật; lý do thật | 1,5 | `LUAN_CU_KIEN_TRUC.md` §1 | kiến trúc cũ | TV1 | |

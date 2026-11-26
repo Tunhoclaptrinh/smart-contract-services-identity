@@ -2,7 +2,8 @@
 
 Tài liệu chốt cho cả nhóm: làm gì (phạm vi, tính năng, quy tắc), từng service đưa ra API nào, các
 service nói chuyện với nhau ra sao, và mỗi yêu cầu của hai môn nằm ở đâu. Toàn cảnh kỹ thuật:
-`docs/HE_THONG.md`. Ai làm, ngày nào: `docs/KICH_BAN_VIBE_CODE.md`. Nghiệp vụ gốc, luôn thắng khi
+`docs/HE_THONG.md`. Sản phẩm là gì, khác bài dự thi ở đâu, sửa gì cho sát thực tế (mã D, P, N, T dùng
+bên dưới): `docs/DINH_VI_SAN_PHAM.md`. Ai làm, ngày nào: `docs/KICH_BAN_VIBE_CODE.md`. Nghiệp vụ gốc, luôn thắng khi
 mâu thuẫn: `../codecash/docs/NGHIEP_VU.md`.
 
 Vì sao từng lựa chọn (đồng bộ hay hàng đợi, gateway, RS256, saga, CI…) và các luồng chính đi qua
@@ -13,7 +14,7 @@ hay luồng đổi; `service/openapi.yaml` là bản chi tiết và phải khớ
 
 ## 1. Bài toán và phạm vi
 
-Hợp đồng trả tiền theo nhiều đợt (mốc). Muốn chi một đợt phải kiểm đủ chứng từ, đủ người duyệt,
+Sản phẩm: **Smart Contract Workflow (SCW)**, nền tảng SaaS B2B cho bên mua và nhà cung cấp. Hợp đồng trả tiền theo nhiều đợt (mốc). Muốn chi một đợt phải kiểm đủ chứng từ, đủ người duyệt,
 không tranh chấp, có trễ hạn hay không. Hệ thống viết các điều kiện đó thành **luật**: các bên soạn
 và ký hợp đồng, nộp chứng từ, phê duyệt, mở tranh chấp; sau mỗi thao tác **engine chấm lại** mốc ra
 RELEASE / HOLD / PENALTY / REJECT, kèm số tiền và **vì sao**; lệnh chi đi qua ngân hàng mô phỏng;
@@ -21,10 +22,10 @@ mọi thao tác ghi vào nhật ký chuỗi băm.
 
 | Mức | Nội dung |
 | --- | --- |
-| **Must** | Đăng ký tổ chức, đăng nhập, mời thành viên (xong); soạn hợp đồng có mốc, kiểm tổng 100% và trần phạt; rà soát hai chiều; ký tuần tự (mô phỏng) và niêm phong văn bản; hợp đồng ký xong tự sang phần thực hiện; nộp chứng từ, phê duyệt, tranh chấp; engine ra quyết định có vết; lệnh chi qua ngân hàng mô phỏng; nhật ký chuỗi băm và kiểm toàn vẹn |
-| **Should** | Ngoại lệ hai người duyệt; chạy thử phê duyệt; thông báo (email mô phỏng); tổng quan có biểu đồ; vi/en |
+| **Must** | Đăng ký tổ chức, đăng nhập, mời thành viên (xong); soạn hợp đồng **trong ứng dụng** từ mẫu, có mốc, kiểm tổng 100% và trần phạt theo loại hợp đồng (P1); rà soát hai chiều; ký tuần tự bằng chữ ký điện tử mô phỏng (P4) và niêm phong văn bản; hoá đơn đủ trường hoá đơn điện tử (P6); tiền tính bằng đồng (D3); dữ liệu mẫu nạp sẵn cho demo (D1); hợp đồng ký xong tự sang phần thực hiện; nộp chứng từ, phê duyệt, tranh chấp; engine ra quyết định có vết; lệnh chi qua ngân hàng mô phỏng; nhật ký chuỗi băm và kiểm toàn vẹn |
+| **Should** | Màn "Kiểm chứng bộ luật" trên dữ liệu mẫu (D2); mã hợp đồng theo tổ chức (D5); ngoại lệ hai người duyệt; chạy thử phê duyệt; thông báo (email mô phỏng); tổng quan có biểu đồ; vi/en |
 | **Could** | Nhắc việc quá hạn theo lịch; xuất PDF biên nhận quyết định; mã VietQR trên lệnh chi |
-| **Won't** | Chữ ký số thật qua CA, tiền thật, hoá đơn điện tử thật, AI đọc hợp đồng |
+| **Won't** | Chữ ký số thật qua CA, giữ hay chuyển tiền thật (P7), kết nối hoá đơn điện tử của cơ quan thuế, AI đọc hợp đồng (T1) |
 
 ## 2. Người dùng và vai trò
 
@@ -52,22 +53,23 @@ một database riêng.
 | Service | Chủ | Sở hữu dữ liệu | Tính năng (Must trước) | Trạng thái |
 | --- | --- | --- | --- | --- |
 | identity | TV1 | organizations, users, settings, refresh-tokens, one-time-tokens, mail-outbox | Đăng ký, đăng nhập, refresh, đổi và quên mật khẩu, mời thành viên, JWKS, khoá tài khoản | **xong** |
-| contract | TV2 | contract-templates, contract-drafts, milestone-templates, rule-versions, extraction-proposals, comments | Mẫu hợp đồng; soạn bản nháp từ mẫu; số hoá mốc (BR-A03…A07); thành viên và nhiệm vụ; rà soát hai chiều, bình luận, xác nhận (BR-A08); máy trạng thái (BR-A02); hồ sơ pháp lý theo loại hợp đồng | chưa |
-| signing | TV3 | documents (phiên bản, mã băm, niêm phong), signing (phiên ký, lượt), signing-requests, signing-profiles, attachments | Dựng văn bản từ điều khoản, đóng băng, mã băm; phiên ký và lượt ký đúng thứ tự (BR-A09, A10); ký mô phỏng qua nhà cung cấp; niêm phong; xác minh công khai; tải tệp chứng từ (BR-A11); điều phối S1, phát `contract.activated` (S2) | chưa |
-| execution | TV4 | parties, contracts (bản thực hiện), milestones, events (chứng từ), status-history, acceptance-requests, amendments, exceptions, notes | Nhập hợp đồng đã ký (S2, idempotent); mốc và "việc còn lại" có người chịu trách nhiệm; nộp chứng từ (BR-B03, B08, B11); phê duyệt theo vai trò (BR-B05); tranh chấp (BR-B09); ngoại lệ hai người (BR-B12); phụ lục dời hạn; thanh lý; gọi decision, PENDING_EVALUATION (S3) | chưa |
-| decision (Python) | TV5 | evaluations, engine-runs, payment-rules (bộ luật có phiên bản) | FastAPI quanh `codecash_engine`: chấm một mốc ra RELEASE/HOLD/PENALTY/REJECT kèm vết luật (BR-B01…B07); chạy thử; bộ luật có phiên bản | chưa |
-| payment | TV5 | payments (lệnh chi), saga-log | Lập lệnh chi khi quyết định trả tiền (BR-B10), duyệt, gửi ngân hàng mô phỏng có `Idempotency-Key`, PENDING và đối soát, gửi lại (S4) | chưa |
+| contract | TV2 | contract-templates, contract-drafts, milestone-templates, rule-versions, extraction-proposals, comments | Mẫu hợp đồng; soạn bản nháp từ mẫu; số hoá mốc (BR-A03…A07); thành viên và nhiệm vụ; rà soát hai chiều, bình luận, xác nhận (BR-A08); máy trạng thái (BR-A02); hồ sơ pháp lý theo loại hợp đồng (P1); lãi chậm trả (P2); mẫu từ 4 quy trình có sẵn (N2) | chưa |
+| signing | TV3 | documents (phiên bản, mã băm, niêm phong), signing (phiên ký, lượt), signing-requests, signing-profiles, attachments | Dựng văn bản từ điều khoản, đóng băng, mã băm; phiên ký và lượt ký đúng thứ tự (BR-A09, A10); ký điện tử mô phỏng (mức `SIMULATED`, P4) qua nhà cung cấp mô phỏng; niêm phong; xác minh công khai; tải tệp chứng từ (BR-A11); điều phối S1, phát `contract.activated` (S2) | chưa |
+| execution | TV4 | parties, contracts (bản thực hiện), milestones, events (chứng từ), status-history, acceptance-requests, amendments, exceptions, notes | Nhập hợp đồng đã ký (S2, idempotent); nạp dữ liệu mẫu (D1); mốc và "việc còn lại" có người chịu trách nhiệm; nộp chứng từ và hoá đơn đủ trường (BR-B03, B08, B11, B13); phê duyệt theo vai trò (BR-B05); tranh chấp (BR-B09); ngoại lệ hai người (BR-B12); phụ lục dời hạn; thanh lý; gọi decision, PENDING_EVALUATION (S3) | chưa |
+| decision (Python) | TV5 | evaluations, engine-runs, payment-rules (bộ luật có phiên bản) | FastAPI quanh engine Python: chấm một mốc ra RELEASE/HOLD/PENALTY/REJECT kèm vết luật (BR-B01…B07); chạy thử; một bộ luật đã công bố cho mỗi hợp đồng, có phiên bản (N1); kiểm chứng bộ luật trên dữ liệu mẫu (D2) | chưa |
+| payment | TV5 | payments (lệnh chi), saga-log | Lập lệnh chi khi quyết định trả tiền (BR-B10), duyệt; **không giữ tiền**, chỉ gửi lệnh sang ngân hàng của bên mua (P7): gửi ngân hàng mô phỏng có `Idempotency-Key`, PENDING và đối soát, gửi lại (S4) | chưa |
 | audit | TV6 | audit (tập trung, chuỗi băm), anchor-jobs, notifications, processed-messages | Nhận sự kiện của mọi service (idempotent, DLQ); chuỗi băm và `GET /audit/verify`; neo Merkle; thông báo trong ứng dụng và email mô phỏng | chưa |
 | gateway | TV1 | — | Điểm vào duy nhất, kiểm JWT lớp 1, giới hạn, CORS, request id, 503/504 | **xong** |
 
 Ranh giới dữ liệu đã chốt (lập luận ở `docs/LUAN_CU_KIEN_TRUC.md` §2): identity là nguồn của tổ
 chức, `parties` ở execution chỉ là bản sao chỉ đọc theo mã; execution giữ **ảnh chụp bất biến** của
 hợp đồng đã ký (gói v1), contract giữ bản đang soạn; decision **không gọi ngược** execution mà nhận
-trọn gói dữ kiện của mốc trong request.
+trọn gói dữ kiện của mốc trong request. **Tiền** mọi nơi là chuỗi số nguyên đồng (`…Vnd`, D3); cách
+làm tròn tiền phạt chờ quyết định D4.
 
 **Vì sao chia như vậy**: soạn thảo, ký, thực hiện, quyết định, chi tiền, kiểm toán có dữ liệu sở
 hữu, tần suất đổi và rủi ro khác nhau (giá trị pháp lý của chữ ký khác an toàn dòng tiền; engine là
-Python đã kiểm chứng 405/405 quyết định). **Vì sao không nhỏ hơn**: tách phê duyệt khỏi chứng từ, hay
+Python đã kiểm chứng trên 405 mốc của dữ liệu mẫu). **Vì sao không nhỏ hơn**: tách phê duyệt khỏi chứng từ, hay
 tài liệu khỏi ký, làm mỗi lần chấm mốc hoặc mỗi lượt ký phải gọi chéo mà không giảm rủi ro nào.
 
 ## 4. Quy tắc nghiệp vụ (MS-R1)
@@ -100,6 +102,7 @@ Mỗi quy tắc có mã, service thực thi và mã lỗi; test của service ph
 | BR-B10 | Lệnh chi chỉ khi quyết định trả tiền, một lần mỗi mốc, chỉ phê duyệt tài chính bên mua duyệt | payment | 409 `DECISION_NOT_PAYABLE`, 409 `ORDER_EXISTS`, 403 |
 | BR-B11 | Mốc đã chi hoặc bị từ chối bị khoá | execution | 409 `MILESTONE_LOCKED` |
 | BR-B12 | Ngoại lệ do chủ hợp đồng đề xuất, kiểm soát viên duyệt, không tự duyệt | execution | 409 `SELF_APPROVAL_FORBIDDEN` |
+| BR-B13 | Hoá đơn có đủ ký hiệu, số, ngày, MST hai bên, tiền trước thuế, thuế suất, tiền thuế; tổng khớp giá trị mốc (P6) | execution | 422 `INVOICE_INVALID`, 422 `INVOICE_AMOUNT_MISMATCH` |
 | BR-I01 | Tự đăng ký chỉ tạo công ty mới + `ORG_ADMIN`; quản trị công ty chỉ mời vai trò được cấp | identity | 403 `ROLE_NOT_ASSIGNABLE` (**xong**) |
 | BR-I02 | 5 lần sai mật khẩu trong 15 phút khoá tài khoản 15 phút | identity | 429 `ACCOUNT_TEMPORARILY_LOCKED` (**xong**) |
 
@@ -205,7 +208,7 @@ chấm mốc là đồng bộ có PENDING. Thiếu thời gian thì outbox + g�
 Gói hợp đồng v1 (`contract.activated`): hợp đồng (mã, loại, giá trị dạng chuỗi thập phân, thời hạn,
 chính sách duyệt), hai bên, các mốc (thứ tự, loại, hạn, %, giá trị, chứng từ bắt buộc, vai trò duyệt,
 ân hạn, tỷ lệ và trần phạt), thành viên và nhiệm vụ, mã băm văn bản đã niêm phong, các chữ ký, bộ
-luật áp dụng. Tên trường mốc trùng cột `milestones.csv` của Data Pack để engine dùng ngay.
+luật áp dụng. Tên trường mốc trùng cột `milestones.csv` của dữ liệu mẫu để engine dùng ngay; số tiền trong gói tính bằng đồng.
 
 ## 8. Luồng nhiều bước (MS-R6)
 
@@ -276,7 +279,7 @@ Chạy trước (tắt cơ chế bằng `RESILIENCE_ENABLED=false`) và sau, cù
 
 | Mã | Đáp ứng ở | Chủ | Trạng thái |
 | --- | --- | --- | --- |
-| MS-R1 ≥ 5 quy tắc | §4 (25 quy tắc), test vi phạm từng service | TV2 gom | 2/25 có test |
+| MS-R1 ≥ 5 quy tắc | §4 (26 quy tắc), test vi phạm từng service | TV2 gom | 2/26 có test |
 | MS-R2 chia service, database riêng | §3, `compose.yaml`, `infra/postgres-init.sql` | TV1 | **xong** khung; thêm service khi có |
 | MS-R3 ≥ 4 endpoint REST, lỗi 4xx, OpenAPI | §6, `service/openapi.yaml` từng repo | chủ service | identity **xong** |
 | MS-R4 gateway duy nhất | `gateway/` | TV1 | **xong** |
@@ -315,4 +318,6 @@ Chạy trước (tắt cơ chế bằng `RESILIENCE_ENABLED=false`) và sau, cù
 | 004 | Gateway tự viết (TypeScript, `node:http`) thay vì Kong/Traefik: giải thích được từng chính sách |
 | 005 | Saga điều phối tập trung + outbox, thay vì choreography |
 | 006 | decision viết Python (engine đã kiểm chứng), các service còn lại NestJS |
-| 007 | Tiền là chuỗi thập phân, không dùng số thực |
+| 007 | Tiền là chuỗi số nguyên đồng, không dùng số thực; dữ liệu mẫu (đơn vị triệu) quy đổi lúc nạp (D3, D4) |
+| 008 | Bộ dữ liệu của bài toán gốc chỉ là dữ liệu mẫu và bộ kiểm hồi quy, không phải đầu vào của sản phẩm (D1, D2) |
+| 009 | Không giữ tiền: hệ thống tạo và gửi lệnh chi, ngân hàng của bên mua chuyển tiền (P7) |
