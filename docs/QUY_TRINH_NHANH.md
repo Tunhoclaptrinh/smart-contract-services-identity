@@ -20,11 +20,15 @@ core/<việc> ──PR──▶ base ──PR "sync: base → main"──▶ mai
 
 Nhánh việc của phần nền tên `core/<việc>`, **không** đặt `base/<việc>`: Git coi tên nhánh như đường dẫn, nên đã có nhánh `base` thì không tạo được `base/…`.
 
-1. Tạo nhánh từ `base`: `git switch base && git pull && git switch -c core/<việc>`.
-2. Sửa, chạy đủ kiểm tra (`pnpm check` hoặc `pnpm test`), commit theo Conventional Commits.
-3. Mở PR vào `base`; một người khác duyệt; CI phải xanh.
-4. Merge xong, mở PR **`base` → `main`** (tiêu đề `sync: base → main`), dùng **merge commit** (không squash, không rebase) để `main` giữ nguyên commit của `base`.
-5. Ai đang có nhánh nghiệp vụ thì cập nhật: `git switch feat/… && git merge main`.
+**Trưởng nhóm (chủ phần nền, quản trị repo)** không cần PR:
+
+1. `git switch base && git pull`, sửa (hoặc làm trên `core/<việc>` rồi `git merge` vào `base`).
+2. Chạy đủ kiểm tra (`pnpm typecheck && pnpm lint && pnpm format:check && pnpm test`), commit theo Conventional Commits, `git push origin base`. CI chạy lại trên `base`; đỏ thì sửa ngay bằng commit mới.
+3. Đồng bộ: `git switch main && git pull && git merge --no-ff base && pnpm test && git push origin main`; mỗi repo service làm như mục "Kéo phần nền về" của `docs/KIEN_TRUC_REPO.md`.
+
+**Thành viên khác** đụng phần nền thì vẫn mở PR từ `core/<việc>` vào `base`, trưởng nhóm duyệt.
+
+Ai đang có nhánh nghiệp vụ thì cập nhật: `git switch feat/… && git merge main`.
 
 Phần nền thiếu thứ gì khi đang làm nghiệp vụ (một thành phần, một hook, một helper)? **Không sửa thẳng trên nhánh nghiệp vụ.** Báo trưởng nhóm hoặc tự làm theo các bước trên, rồi merge `main` vào nhánh của mình.
 
@@ -44,7 +48,7 @@ Phần nền thiếu thứ gì khi đang làm nghiệp vụ (một thành phần
 - tệp phần nền cần người trong `.github/CODEOWNERS` duyệt;
 - cấm force push, cấm xoá nhánh.
 
-Quản trị repo (trưởng nhóm) được merge bằng quyền admin khi CI xanh mà chưa có người duyệt (`gh pr merge --admin --merge`); chỉ dùng cho việc phần nền hoặc đồng bộ `base → main` khi cả nhóm chưa ai duyệt được, không dùng để bỏ qua CI.
+Quy tắc trên áp cho thành viên. Quản trị repo (trưởng nhóm) không bị áp (`enforce_admins: false`), nên push thẳng `base` và đồng bộ `main` được (mục "Sửa phần nền"); việc nghiệp vụ của chính trưởng nhóm vẫn đi PR như mọi người. Push thẳng không bỏ qua kiểm tra: chạy đủ lệnh kiểm tra trước, CI trên nhánh phải xanh sau.
 
 Bật bằng `scripts/protect-branches.sh <chủ-repo>/<tên-repo>` (cần GitHub CLI `gh` đã đăng nhập, quyền admin repo), chạy một lần sau khi repo có remote và đã push hai nhánh. Kiểm lại ở **Settings → Branches**.
 

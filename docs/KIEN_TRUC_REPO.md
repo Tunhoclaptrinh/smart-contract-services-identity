@@ -27,19 +27,18 @@ Mỗi repo service tự build, tự test, có CI và image riêng: đúng "mỗi
 Repo service có hai remote: `origin` (chính nó) và `upstream` (repo cha).
 
 ```
-repo cha:     core/<việc> ──PR──▶ base
+repo cha:     base  (trưởng nhóm push thẳng; thành viên: core/<việc> ──PR──▶ base)
                                    │
-repo service:  git fetch upstream && git merge upstream/base   (trên nhánh sync/base-<ngày>)
+repo service:  git fetch upstream && git merge upstream/base   (ngay trên main)
                                    │
-                                   └──PR "sync: upstream base"──▶ main
+                                   └── pnpm test xanh ──▶ git push origin main
 ```
 
 ```bash
 git switch main && git pull
-git switch -c sync/base-$(date +%m%d)
-git fetch upstream && git merge upstream/base   # chỉ đổi packages/, cấu hình; service/ không bị đụng
-pnpm install && pnpm test
-git push -u origin HEAD                         # rồi mở PR vào main
+git fetch upstream && git merge --no-ff upstream/base   # chỉ đổi packages/, cấu hình; service/ không bị đụng
+pnpm install && pnpm test && pnpm check:base
+git push origin main                                    # trưởng nhóm; thành viên thì đẩy nhánh sync/base-<ngày> và mở PR
 ```
 
 Quy tắc giữ cho việc merge không xung đột:
