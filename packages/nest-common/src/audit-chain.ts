@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import type { RecordEntity } from "./types";
 
 /**
- * Hash chain over the append-only audit log (docs/NGHIEP_VU.md section 9):
+ * Hash chain over the append-only audit log (business specification, section 9):
  * hash_i = SHA256(canonical_JSON(entry_i without hash)), where entry_i carries seq and prevHash.
  * It detects an edited, removed or reordered entry. Rewriting the whole chain is detected only
  * against a head hash saved somewhere else (the anchor).

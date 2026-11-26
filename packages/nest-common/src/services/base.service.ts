@@ -80,7 +80,7 @@ export class BaseService {
       throw new ForbiddenException("PERMISSION_DENIED");
     return def;
   }
-  /** Data Pack and workflow records change only through their own actions (resources.json). */
+  /** Sample-data and workflow records change only through their own actions (resources.json). */
   private assertUnmanaged(def: Resource, item: RecordEntity) {
     if (def.managedOrigins?.includes(String(item.origin)))
       throw new ForbiddenException("MANAGED_RECORD");
