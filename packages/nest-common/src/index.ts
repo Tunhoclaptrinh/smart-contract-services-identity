@@ -6,6 +6,7 @@
 export * from "./auth-token";
 export * from "./bootstrap";
 export * from "./health.controller";
+export * from "./service-client";
 export * from "./permissions.controller";
 export * from "./repository";
 export * from "./postgres-store";

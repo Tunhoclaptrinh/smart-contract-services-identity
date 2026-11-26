@@ -105,6 +105,10 @@ export class PostgresStore {
     `);
   }
 
+  /** Round trip to the database, for readiness checks. */
+  async ping() {
+    await this.pool.query("SELECT 1");
+  }
   async list(resource: string, client: pg.PoolClient | pg.Pool = this.pool) {
     if (resource === "audit")
       return (

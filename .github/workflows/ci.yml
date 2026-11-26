@@ -67,7 +67,8 @@ jobs:
           # Production refuses file storage, so the image runs on PostgreSQL as it would deployed.
           docker run -d --name api --network btl -p 3000:3000 \
             -e STORAGE_DRIVER=postgres -e DATABASE_URL=postgres://btl:btl-ci@db:5432/btl \
-            -e JWT_SECRET="$(openssl rand -hex 48)" -e SEED_PASSWORD=Passw0rd! sc/service
+            -e JWT_PRIVATE_KEY="$(openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 2>/dev/null)" \
+            -e SEED_PASSWORD=Passw0rd! sc/service
           for attempt in $(seq 1 30); do
             if curl -sf http://127.0.0.1:3000/api/v1/health; then exit 0; fi
             sleep 2

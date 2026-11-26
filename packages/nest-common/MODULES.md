@@ -14,13 +14,14 @@ gốc.
 | `interceptors/transform.interceptor.ts` | Bọc kết quả `{ success, data, requestId }` | tự gắn |
 | `interceptors/logging.interceptor.ts` | Log phương thức, đường dẫn, thời gian | tự gắn |
 | `audit-http.ts` | Ghi nhật ký lượt xem có chủ đích một bản ghi, tài liệu (không ghi lượt tải lại danh sách) | tự gắn |
-| `health.controller.ts` | `GET /health` | thêm vào module service |
+| `health.controller.ts` | `GET /health`: sẵn sàng, gồm một lượt hỏi kho dữ liệu (`repo.ping()`); kho hỏng thì 503 `STORAGE_UNAVAILABLE` | thêm vào module service |
+| `service-client.ts` | Gọi service khác (MS-R5): timeout (mặc định 3 s), chỉ thử lại lỗi hạ tầng với method idempotent (backoff 100, 200 ms…), 4xx của đích trả nguyên, 5xx → 502 `UPSTREAM_ERROR`, không tới được → 503 `UPSTREAM_UNAVAILABLE`, chậm → 504 `UPSTREAM_TIMEOUT`; chuyển tiếp token và `x-request-id`; địa chỉ từ `<TÊN>_URL` | `ServiceClient.fromEnv("contract").get("/contracts/1", { token })` |
 
 ## Xác thực và quyền
 
 | Tệp | Làm gì | Dùng |
 | --- | --- | --- |
-| `auth-token.ts` | Ký, kiểm JWT người gọi; `JwtAuthGuard` đặt `req.user` từ claims, không gọi identity | `signActorToken`, `verifyActorToken`, `JwtAuthGuard` |
+| `auth-token.ts` | JWT RS256: identity ký bằng `JWT_PRIVATE_KEY`, công bố `publicJwks()`; nơi khác kiểm bằng `JWT_PUBLIC_KEY` hoặc `JWKS_URL` (tự tải lại khi gặp `kid` lạ); dev tự sinh khoá ở `.data-jwt`; `JwtAuthGuard` đặt `req.user` từ claims, không gọi identity | `signActorToken`, `verifyActorTokenAsync`, `JwtAuthGuard`, `publicJwks` |
 | `permissions.ts` | Ma trận quyền từ `packages/contracts/permissions.json`, phạm vi `all`/`own` | `@RequirePermission("x:read")`, `can(role, key)`, `scopeOf` |
 | `roles.ts`, `guards/roles.guard.ts`, `decorators/*` | Vai trò, `@Public()`, `@Roles()`, `@CurrentUser()`, `@TenantId()` | decorator trên controller |
 | `permissions.controller.ts` | `GET /permissions`: xem ma trận quyền (cần `permissions:read`) | thêm vào module |
@@ -108,4 +109,4 @@ Toán tử theo kiểu: chuỗi `eq ne in nin contains startsWith isNull`; số 
 ## Test
 
 `packages/nest-common/test/*.test.mjs` (chạy trên `dist`, `pnpm test`): `problem`, `list-engine`,
-`import`, `export`; `postgres.test.mjs` chạy khi có `DATABASE_URL`.
+`import`, `export`, `auth-token`, `service-client`; `postgres.test.mjs` chạy khi có `DATABASE_URL`.

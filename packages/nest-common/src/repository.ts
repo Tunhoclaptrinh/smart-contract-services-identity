@@ -34,6 +34,14 @@ export class Repository implements OnModuleDestroy {
     process.env.DATA_DIR ?? ".data",
     "records.json",
   );
+  /** Storage answers (database round trip, or the data file readable). Throws when it does not. */
+  async ping() {
+    if (this.pg) return this.pg.ping();
+    if (this.db) {
+      await this.db.db?.admin().ping();
+      return;
+    }
+  }
   async init() {
     if (this.driver === "postgres") {
       if (!process.env.DATABASE_URL)

@@ -62,16 +62,19 @@ sequenceDiagram
   participant S as service khác
   W->>G: POST /api/v1/auth/login
   G->>I: chuyển tiếp
-  I-->>W: JWT (người gọi, vai trò, tổ chức trong claims; ký bằng JWT_SECRET)
+  I-->>W: access token RS256 15 phút + refresh token
   W->>G: GET /api/v1/... + Bearer JWT
-  G->>G: lớp 1: kiểm chữ ký, hạn
+  G->>I: (khi gặp kid lạ) GET /.well-known/jwks.json
+  G->>G: lớp 1: kiểm chữ ký bằng khoá công khai, hạn
   G->>S: chuyển tiếp, giữ x-request-id
   S->>S: lớp 2: JwtAuthGuard + @RequirePermission (permissions.json)
   S->>S: lớp 3: phạm vi dữ liệu (tổ chức, thành viên hợp đồng)
   S-->>W: { success, data, requestId } hoặc problem+json
 ```
 
-Service khác **không gọi identity** để kiểm token: chỉ kiểm chữ ký (`JwtAuthGuard` trong chassis).
+Chỉ identity giữ khoá riêng; gateway và service khác **không gọi identity** để kiểm token, chỉ kiểm
+chữ ký bằng khoá công khai lấy từ JWKS (`JwtAuthGuard` trong chassis). Gọi giữa service dùng
+`ServiceClient` (timeout, thử lại, 503/504; `MODULES.md`).
 Riêng identity kiểm thêm tài khoản còn hoạt động và `tokenVersion` (thu hồi khi đổi mật khẩu,
 đăng xuất, khoá).
 
