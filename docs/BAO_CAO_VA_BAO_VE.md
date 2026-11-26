@@ -189,7 +189,7 @@ Chỉ liệt kê văn bản pháp luật đã dẫn (`DINH_VI_SAN_PHAM.md` §4.2
 | --- | --- | --- | --- |
 | 1 | Bài toán | chi tiền theo mốc bằng tay: chậm, sai, chi trùng, không giải thích được | TV2 |
 | 2 | Sản phẩm trong một câu | luồng soạn → ký → chứng từ → quyết định → chi → kiểm toán | TV2 |
-| 3 | Vì sao microservices (và vì sao không phải vì hiệu năng) | ranh giới rủi ro, chuỗi ký và xác minh với hệ ngoài, engine thay được, 6 người | TV1 |
+| 3 | Vì sao microservices (và vì sao không phải vì hiệu năng) | ranh giới rủi ro, chuỗi ký và xác minh với hệ ngoài, engine thay được, nhất quán theo vùng, trách nhiệm và quyền | TV1 |
 | 4 | Sơ đồ một trang + bảng service | 6 + identity + gateway, database riêng | TV1 |
 | 5 | Đồng bộ hay hàng đợi | đồ thị phụ thuộc không vòng; 3 chỗ dùng hàng đợi | TV6 |
 | 6 | Saga S1 và S4 | bù trừ, PENDING, Idempotency-Key | TV3, TV5 |
@@ -237,7 +237,7 @@ Câu trả lời gợi ý ngắn; đọc thêm ở tệp ghi bên cạnh.
 
 | Câu hỏi | Trả lời gợi ý | Đọc |
 | --- | --- | --- |
-| Tải nhỏ vậy sao phải microservices? | Đúng, monolith đủ; tách vì ranh giới rủi ro, chuỗi ký và xác minh với nhiều hệ ngoài, engine phải thay và mở rộng được, làm song song; nhóm trả giá bằng saga, outbox, idempotency | `LUAN_CU_KIEN_TRUC.md` §1 |
+| Tải nhỏ vậy sao phải microservices? | Đúng, monolith đủ; tách vì ranh giới rủi ro, chuỗi ký và xác minh với nhiều hệ ngoài, engine phải thay và mở rộng được, nhất quán chỉ cần trong từng vùng, ranh giới trùng trách nhiệm và quyền; nhóm trả giá bằng saga, outbox, idempotency | `LUAN_CU_KIEN_TRUC.md` §1 |
 | Vì sao 6 service, không 3 hay 10? | mỗi service khác các service khác ở ≥ 3 trong 6 tiêu chí; 47% thay đổi trong lịch sử mã nằm gọn một vùng; gộp thô thì lỗi ngân hàng và cập nhật luật kéo cả phần thực hiện, chia theo bảng thì phê duyệt cần 3–4 lời gọi và phá dòng sự kiện của mốc | `LUAN_CU_KIEN_TRUC.md` §2.1, §2.2, §2.6 |
 | contract và execution hay sửa cùng nhau, sao vẫn tách? | đúng, đó là ranh giới yếu nhất (20% đổi một mình); giảm bằng gói hợp đồng có phiên bản là hợp đồng duy nhất giữa hai bên, không chung kiểu; có dấu hiệu để gộp lại nếu vẫn dính | `LUAN_CU_KIEN_TRUC.md` §2.5, §2.8 |
 | Nếu thay engine thì sao? | decision nằm sau hợp đồng API; engine mới chạy bóng song song, so bộ kiểm hồi quy và quyết định thật, khớp mới bật; không service nào khác đổi | `LUAN_CU_KIEN_TRUC.md` §2.1b |

@@ -95,8 +95,8 @@ trạng thái) mà chưa ghi vào §7 và được trưởng nhóm đồng ý** 
 | # | Hiện trạng | Sửa thành | Vì sao | Mức | Ai |
 | --- | --- | --- | --- | --- | --- |
 | T1 | Trích xuất điều khoản bằng Gemini (`trust/gemini-extractor.ts`) | **Tắt mặc định**; giữ luồng "đề xuất trích xuất → người xác nhận" với nhập tay. Chỉ bật nếu TV2 dư thời gian và có dữ liệu giả | MoSCoW đã xếp AI vào Won't; cần khoá API (bí mật); P8 | Won't | TV2 |
-| T2 | Lưu trữ file JSON / MongoDB / PostgreSQL | Chỉ PostgreSQL (file JSON giữ cho test); bỏ MongoDB | Một loại database dễ vận hành, đúng đề | M | đã xong ở chassis |
-| T3 | Engine Python gọi như tiến trình con | Service `decision` sau một hợp đồng API (hiện FastAPI bọc engine Python; engine thay được, chạy bóng trước khi bật) | MS-R2, MS-R5; mở rộng | M | TV5 |
+| T2 | Lưu trữ file JSON / MongoDB / PostgreSQL | Chỉ PostgreSQL (file JSON giữ cho test); bỏ MongoDB | Một loại database có giao dịch, dễ vận hành, đủ cho mọi service | M | đã xong ở chassis |
+| T3 | Engine Python gọi như tiến trình con | Service `decision` sau một hợp đồng API (hiện FastAPI bọc engine Python; engine thay được, chạy bóng trước khi bật) | thay và mở rộng engine không đụng phần khác; lời gọi có timeout | M | TV5 |
 | T4 | Nhà ký từ xa và ký trên điện thoại (`apps/signer`, QR) | Giữ làm **nhà cung cấp ký mô phỏng** riêng: chính là phụ thuộc ngoài để làm PENDING_PROVIDER và thí nghiệm F3 | Có sẵn, đúng chỗ cần cho môn MS | S | TV3 |
 | T5 | TanStack Query cho dữ liệu máy chủ | **Giữ** TanStack Query; Redux Toolkit giữ phiên (đã có). Ghi lý do trong báo cáo LTWNC | Đề yêu cầu Redux Toolkit **hoặc** Zustand cho state toàn cục: phiên là state toàn cục và đã ở Redux; dữ liệu máy chủ là cache, không phải state ứng dụng. Nếu giảng viên yêu cầu chặt, chuyển dần sang RTK Query (cùng họ Redux Toolkit) theo từng tính năng | M | TV1 ghi lý do; hỏi giảng viên sớm |
 

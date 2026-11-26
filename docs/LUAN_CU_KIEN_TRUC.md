@@ -26,7 +26,8 @@ cỡ vài nghìn hợp đồng mỗi năm, vài chục thao tác ghi mỗi phút
 tải lớn.** Một ứng dụng nguyên khối (monolith) chia mô-đun chạy thừa sức, và CodeCash đã chạy đúng
 như vậy.
 
-Vì vậy, ta **không** biện minh microservices bằng hiệu năng. Lý do thật là:
+Vì vậy, ta **không** biện minh microservices bằng hiệu năng. Mọi lý do dưới đây đi ra từ phân tích bài
+toán (rủi ro, phụ thuộc ngoài, nhịp thay đổi, cách hỏng), không từ công nghệ có sẵn hay yêu cầu bên ngoài:
 
 1. **Ranh giới rủi ro khác nhau.** Chữ ký có giá trị pháp lý; dòng tiền cần chống chi trùng; engine
    phải tái lập được kết quả; nhật ký phải độc lập với người bị kiểm toán. Tách ra thì lỗi hoặc thay đổi
@@ -37,12 +38,16 @@ Vì vậy, ta **không** biện minh microservices bằng hiệu năng. Lý do t
    hạn, đổi API hay sập. Ngân hàng cũng vậy ở phía chi tiền. Cô lập chúng để khi chúng chậm hoặc sập thì
    phần còn lại vẫn chạy (§2.1c, §5, §6).
 3. **Phần quyết định phải thay được và mở rộng được.** Luật thanh toán là thứ đổi nhiều nhất và đáng
-   giá nhất của sản phẩm. Engine hôm nay (Python, đã chạy qua bộ dữ liệu mẫu) không phải là lý do tách;
-   lý do là engine nằm sau **một hợp đồng API** (gói dữ kiện vào, quyết định và vết ra), nên có thể viết
+   giá nhất của sản phẩm, và mỗi loại hợp đồng có thể cần cách tính riêng. Đặt engine sau **một hợp đồng
+   API** (gói dữ kiện vào, quyết định và vết ra), nên có thể viết
    lại, đổi ngôn ngữ, chạy nhiều engine theo loại hợp đồng, hay chấm lại hàng loạt khi công bố luật mới,
    mà không đụng phần nào khác (§2.1b).
-4. **Sáu người làm song song** trong ba tuần: mỗi người một repo, không giẫm chân (`KIEN_TRUC_REPO.md`).
-5. Môn Kiến trúc Microservices yêu cầu.
+4. **Nhất quán chỉ cần ở trong từng vùng.** Một mốc cần chứng từ, phê duyệt, tranh chấp của nó nhất quán
+   tức thì; nhưng việc nhật ký trung tâm, thông báo hay hợp đồng đã ký "đến" phần thực hiện chậm vài giây
+   thì không sai nghiệp vụ nào. Chỗ nào chỉ cần nhất quán dần thì ranh giới đặt được ở đó (§3).
+5. **Mỗi vùng có người chịu trách nhiệm và quyền riêng.** Pháp chế lo điều khoản, kế toán lo chi tiền,
+   kiểm toán độc lập với người bị kiểm toán. Ranh giới service trùng ranh giới trách nhiệm đó, nên
+   quyền truy cập dữ liệu, người duyệt thay đổi và nhịp phát hành đi theo từng vùng.
 
 Câu nên nói khi vấn đáp: *"Với tải này, monolith là đủ; nhóm chọn microservices vì ranh giới rủi ro và
 phụ thuộc ngoài, và đã trả giá bằng saga, outbox, idempotency; đây là các chi phí đó."* Bằng chứng cho
@@ -206,9 +211,9 @@ ký** (L3), một **lệnh chi** (L6).
 | Phương án | Số service nghiệp vụ | Phê duyệt | Lượt ký | Lệnh chi | Vấn đề |
 | --- | --- | --- | --- | --- | --- |
 | **Đang chọn** | 6 | 1 (execution → decision) | 0 (lượt cuối: 1 sang contract) | 2 (→ execution, → decision) + ngân hàng | contract là ranh giới yếu (§2.5) |
-| Gộp thô: soạn+ký, thực hiện+quyết định+chi, kiểm toán | 3 | 0 | 0 | 0 | không đủ ≥ 5 service của đề; thay engine hay chấm lại hàng loạt kéo cả phần thực hiện; lỗi ngân hàng và cập nhật luật kéo cả phần thực hiện; quyền chi tiền và quyền nộp chứng từ chung một database |
+| Gộp thô: soạn+ký, thực hiện+quyết định+chi, kiểm toán | 3 | 0 | 0 | 0 | thay engine hay chấm lại hàng loạt kéo cả phần thực hiện; lỗi ngân hàng và cập nhật luật kéo cả phần thực hiện; quyền chi tiền và quyền nộp chứng từ chung một database |
 | Chia theo bảng (mỗi thực thể một service: hợp đồng, mốc, chứng từ, phê duyệt, tranh chấp…) | 10+ | 3–4: decision cần chứng từ, phê duyệt, tranh chấp của cùng mốc từ ba nơi | 1 (kiểm mã băm ở dịch vụ tài liệu) | 3–4 | engine coi chứng từ, phê duyệt, từ chối, tranh chấp là **một dòng sự kiện của mốc** (tranh chấp có thể phạm vi cả hợp đồng); chia ra thì không còn một thời điểm nhất quán để chấm, "đủ người duyệt chưa" thành câu hỏi phân tán |
-| Tách thêm tài liệu, thông báo, bộ luật thành service riêng | 9 | 1 | 1 | 2 | thêm 3 repo, 3 database cho 6 người trong 3 tuần mà không có tiêu chí nào khác biệt đủ mạnh (§2.1) |
+| Tách thêm tài liệu, thông báo, bộ luật thành service riêng | 9 | 1 | 1 | 2 | thêm 3 database, 3 đường triển khai và giám sát, thêm lời gọi chéo, mà không có tiêu chí nào khác biệt đủ mạnh (§2.1): tài liệu đi cùng chữ ký, thông báo đi cùng sự kiện, bộ luật đi cùng engine |
 
 Phương án đang chọn đặt **đúng một lời gọi chéo** trên đường phê duyệt (luồng chạy nhiều nhất của nửa
 sau vòng đời) và chi tiền là nơi duy nhất có hai lời gọi, đúng chỗ cần saga để an toàn.
@@ -274,7 +279,7 @@ nhất) chỉ đi web → gateway → **một** service, vì mỗi service có �
 
 | Thành phần | Giải quyết gì | Không có thì sao | Vì sao chọn cái này |
 | --- | --- | --- | --- |
-| **API gateway** (tự viết, `gateway/`) | Một địa chỉ cho web và Postman; kiểm token lớp 1; giới hạn số request; CORS; request id; 503/504 thống nhất | Web phải biết 7 cổng, CORS cấu hình 7 nơi, service lộ ra ngoài, không chặn được dò mật khẩu ở một chỗ | Tự viết ~250 dòng: giải thích được từng chính sách khi vấn đáp, không có luật nghiệp vụ. Kong/Traefik mạnh hơn nhưng là cấu hình, không chấm được kiến thức, và thêm một hệ phải học |
+| **API gateway** (tự viết, `gateway/`) | Một địa chỉ cho web và đối tác; kiểm token lớp 1; giới hạn số request; CORS; request id; 503/504 thống nhất | Web phải biết 7 cổng, CORS cấu hình 7 nơi, service lộ ra ngoài, không chặn được dò mật khẩu ở một chỗ | Chính sách cần ít và rõ (định tuyến theo tiền tố, kiểm JWKS, giới hạn, timeout), tự viết khoảng 250 dòng có test, không chứa luật nghiệp vụ. Kong/Traefik mạnh hơn nhưng là thêm một hệ phải vận hành cho những chính sách không cần tới |
 | **JWT RS256 + JWKS** | Service kiểm token không cần gọi identity; chỉ identity ký được | Mỗi request gọi identity (identity thành điểm nghẽn, sập là cả hệ sập); hoặc dùng chung một bí mật (lộ một service là giả được token của mọi người) | Chuẩn OAuth/OIDC; HS256 với bí mật chung đã bỏ vì lý do trên |
 | **Access 15 phút + refresh xoay vòng** | Service khác không kiểm thu hồi, nên token bị lộ chỉ dùng được tối đa 15 phút; refresh token bị chép thì phát hiện khi dùng lại | Token 8 giờ: khoá tài khoản xong người đó vẫn thao tác cả ngày ở service khác | OAuth 2.0 Security BCP; cookie HttpOnly để script trên trang không đọc được |
 | **Database riêng mỗi service** (cùng một máy Postgres) | Không service nào đọc trộm bảng của service khác; đổi schema không làm vỡ ai | Ai cũng join bảng của nhau → thực chất là monolith phân tán, sửa một bảng vỡ ba service | Một máy Postgres nhiều database: đúng ranh giới mà không tốn 7 máy chủ; ở thật thì tách máy khi cần |
@@ -286,11 +291,11 @@ nhất) chỉ đi web → gateway → **một** service, vì mỗi service có �
 | **Consumer idempotent** (`processed-messages`) | Hàng đợi giao "ít nhất một lần"; message đến hai lần không được ghi hai lần | Nhập một hợp đồng hai lần, ghi một mục nhật ký hai lần | Bảng khoá duy nhất theo `messageId` là cách đơn giản và chắc nhất |
 | **Circuit breaker + bulkhead** (chỉ quanh ngân hàng và nhà cung cấp ký) | Ngân hàng chậm thì ngừng gọi một lúc, trả lỗi nhanh, không dồn hàng trăm kết nối treo | Mỗi request chờ đủ timeout, kết nối dồn lên, gateway timeout lan sang cả những màn không liên quan | Chỉ đặt ở phụ thuộc **ngoài**, không đặt ở mọi lời gọi nội bộ (tải nội bộ thấp, thêm vào chỉ làm khó debug) |
 | **Nhật ký chuỗi băm** | Kiểm toán biết có ai sửa hay xoá lịch sử không | Người có quyền DB sửa lại "ai duyệt, lúc nào" mà không ai biết | Mỗi mục chứa băm của mục trước; `GET /audit/verify` tính lại. Blockchain thật là thừa: không có nhiều bên không tin nhau cùng ghi |
-| **Engine sau hợp đồng API** (decision) | Luật thanh toán đổi nhiều nhất; engine thay được mà không đụng ai | Engine gắn vào execution: đổi engine là sửa, kiểm, triển khai lại execution; không chạy bóng được | Hiện dùng engine Python đã chạy qua bộ dữ liệu mẫu và bộ kiểm hồi quy; thay engine thì chạy bóng, so kết quả rồi mới bật |
+| **Engine sau hợp đồng API** (decision) | Luật thanh toán đổi nhiều nhất; engine thay được mà không đụng ai | Engine gắn vào execution: đổi engine là sửa, kiểm, triển khai lại execution; không chạy bóng được | Hợp đồng API: gói dữ kiện của mốc vào, quyết định và vết luật ra. Engine nào đáp ứng hợp đồng đó và qua bộ kiểm hồi quy thì dùng được; thay thì chạy bóng, so kết quả rồi mới bật |
 | **Xác minh chữ ký và chứng từ** (signing) | Chữ ký đúng tại thời điểm ký, bằng chứng dài hạn, hoá đơn có thật | Chấp nhận chứng từ chữ ký giả; mất bằng chứng khi chứng thư hết hạn | Một năng lực dùng cho hợp đồng, chứng từ, trang khách; adapter từng nhà cung cấp; bất đồng bộ khi bên ngoài chậm |
-| **Docker + `docker compose`** | Máy chấm chạy cả hệ bằng một lệnh, đúng phiên bản (MS-R7) | "Máy em chạy được": thiếu Postgres, sai phiên bản Node, quên biến môi trường | Kubernetes giải quyết nhiều máy, tự co giãn: không có nhu cầu đó; compose là đủ và đề yêu cầu |
+| **Docker + `docker compose`** | Mọi môi trường (máy dev, CI, máy demo, máy chủ) chạy cùng một bộ container, cùng phiên bản, bằng một lệnh | "Máy em chạy được": thiếu Postgres, sai phiên bản Node, quên biến môi trường | Kubernetes giải quyết nhiều máy, tự co giãn, cập nhật cuốn chiếu: chưa có nhu cầu đó ở tải này (§1); compose đủ, chuyển lên Kubernetes sau không phải sửa service |
 | **Request id xuyên service** | Lần một lỗi qua gateway → signing → contract bằng một mã | Ba service ba log, không biết dòng nào thuộc request nào | Header `x-request-id`, đã có sẵn. Grafana/Loki chỉ làm nếu dư thời gian |
-| **k6** | Số liệu thí nghiệm lỗi trước và sau (MS-R8) | Không có số, chỉ có "em thấy nó chạy" | Viết kịch bản bằng JavaScript, chạy trong container |
+| **k6** | Đo được hệ chịu lỗi tới đâu: tỷ lệ lỗi, p95, số giao dịch treo, số giao dịch trùng, trước và sau khi bật timeout, PENDING, circuit breaker | Không biết cơ chế có tác dụng thật không, chỉ có "thấy nó chạy" | Viết kịch bản bằng JavaScript, chạy trong container, cùng tải cho mọi lần đo |
 | **ServiceClient** (timeout, thử lại có điều kiện) | Mọi lời gọi chéo cùng một quy tắc: không treo mãi, không thử lại 4xx, phân biệt lỗi nghiệp vụ và lỗi hạ tầng (MS-R5) | Mỗi người tự viết `fetch`, có chỗ không timeout, có chỗ thử lại cả POST chi tiền | Một thư viện trong chassis, có test |
 
 ## 5. Đồ thị phụ thuộc
@@ -341,13 +346,13 @@ Nhóm hai (việc chậm hoặc nhiều, không được làm người dùng ch�
 5. **Chấm lại hàng loạt** khi công bố phiên bản luật (execution → decision): hàng nghìn mốc chia lô;
    decision nhân bản để chạy nhanh, màn người dùng không chậm.
 
-Nếu thiếu thời gian, phương án tối thiểu vẫn đúng: **outbox + tiến trình gửi HTTP có thử lại** (không
-broker). Mất điểm cộng MS-B1 (+0,5) nhưng không mất tính đúng. Vì thế thứ tự làm là: outbox trước (bắt
-buộc cho đúng), broker sau (điểm cộng và gọn hơn khi nhiều bên nhận).
+Phương án tối thiểu vẫn đúng: **outbox + tiến trình gửi HTTP có thử lại** (không broker). Mất đi việc
+phát một sự kiện cho nhiều bên mà bên phát không cần biết có ai nhận, và mất DLQ có sẵn; không mất tính
+đúng. Vì thế thứ tự làm là: outbox trước (bắt buộc cho đúng), broker sau (gọn hơn khi nhiều bên nhận).
 
 ## 7. Có cần CI không, vì sao GitHub Actions
 
-CI trả lời câu "PR này có làm hỏng gì không" **trước khi** merge, cho cả sáu người, mỗi lần push. Không
+CI trả lời câu "PR này có làm hỏng gì không" **trước khi** merge, cho mọi người trong nhóm, mỗi lần push. Không
 có CI thì lỗi chỉ lộ ra ở ngày tích hợp, khi đã chồng lên bốn PR khác và không biết PR nào gây ra.
 
 Ở đây CI làm năm việc, việc nào cũng chặn một lỗi thật đã gặp hoặc sẽ gặp:
@@ -374,7 +379,8 @@ có CI thì lỗi chỉ lộ ra ở ngày tích hợp, khi đã chồng lên b�
 - Jenkins cần một máy chủ để tự nuôi; GitLab CI cần chuyển repo sang GitLab. Không có lợi ích nào bù
   được chi phí đó.
 
-**CD (triển khai tự động) chưa cần.** Đề yêu cầu demo trực tiếp trên máy nhóm, chạy bằng compose. Nếu
+**CD (triển khai tự động) chưa cần.** Chưa có môi trường chạy thật nào cần cập nhật thường xuyên; mỗi
+lần chạy là dựng lại từ compose. Nếu
 làm mục "Could" (đường link có HTTPS), bước rẻ nhất là thêm vào job hiện có: build image rồi đẩy lên
 GitHub Container Registry khi merge vào `main`; máy chủ demo chỉ `docker compose pull && up`. Không
 dựng Kubernetes, không ArgoCD.
@@ -494,19 +500,19 @@ từ chối = giá trị hợp đồng) → nhà cung cấp xác nhận → hợ
 
 | Không làm | Vì sao |
 | --- | --- |
-| Kubernetes, service mesh | Không có nhu cầu nhiều máy, tự co giãn; compose đủ và đề yêu cầu |
+| Kubernetes, service mesh | Không có nhu cầu nhiều máy, tự co giãn, mã hoá giữa service theo chính sách; compose đủ |
 | Kafka | Không cần giữ log để phát lại ở quy mô lớn; RabbitMQ đủ và nhẹ |
 | Blockchain thật | Không có nhiều tổ chức không tin nhau cùng ghi; chuỗi băm + neo Merkle đạt mục đích kiểm toán |
 | Circuit breaker ở mọi lời gọi nội bộ | Tải nội bộ thấp; chỉ đặt ở ngân hàng và nhà cung cấp ký |
 | Cache (Redis) | Đường đọc một service, dữ liệu nhỏ; chưa có số đo nào cho thấy chậm |
-| GraphQL / BFF | Mỗi màn gọi một service; REST + OpenAPI là đề yêu cầu |
+| GraphQL / BFF | Mỗi màn gọi một service; REST theo tài nguyên đủ, dễ cache, mô tả trọn bằng OpenAPI; GraphQL thêm một lớp truy vấn chưa có ai cần |
 | Event sourcing | Trạng thái hiện tại + nhật ký chuỗi băm đủ để tái dựng "vì sao"; event sourcing tăng độ khó mà không thêm điều gì cần |
 
 ## 10. Rủi ro và cách giảm
 
 | Rủi ro | Giảm bằng |
 | --- | --- |
-| 7 service cho 6 người trong 3 tuần | phần nền đã xong; mỗi người một service; TV5 hai service vì decision chỉ là lớp mỏng quanh engine; thiếu giờ thì bỏ broker (§6), giữ outbox |
+| Nhiều service so với nguồn lực làm | phần nền dùng chung đã xong; mỗi service một người chịu trách nhiệm; decision là lớp mỏng quanh engine; thiếu giờ thì bỏ broker (§6), giữ outbox |
 | Token đã đăng xuất còn dùng được ở service khác tới 15 phút | chấp nhận có ý thức; sau này phát `user.disabled` để service chặn sớm |
 | Dữ liệu tổ chức lệch giữa identity và execution | identity là nguồn; execution chỉ giữ bản sao theo mã, đến qua gói hợp đồng |
 | Lệnh chi trùng | `Idempotency-Key`, một lệnh mỗi mốc (BR-B10), khoá mốc `PAYMENT_REQUESTED`, PENDING thay vì đoán |

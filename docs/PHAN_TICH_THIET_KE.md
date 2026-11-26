@@ -47,7 +47,7 @@ chức (lớp 3). Web ẩn nút theo quyền nhưng không bao giờ là lớp k
 
 ## 3. Service, dữ liệu, tính năng
 
-6 service nghiệp vụ (MS-R2 cần ≥ 5) cộng identity và gateway. Mỗi service một repo, một Dockerfile,
+6 service nghiệp vụ cộng identity và gateway. Mỗi service một repo, một Dockerfile,
 một database riêng.
 
 | Service | Chủ | Sở hữu dữ liệu | Tính năng (Must trước) | Trạng thái |
@@ -324,7 +324,7 @@ Chạy trước (tắt cơ chế bằng `RESILIENCE_ENABLED=false`) và sau, cù
 | 003 | Token RS256 + JWKS, access 15 phút + refresh xoay vòng trong cookie HttpOnly |
 | 004 | Gateway tự viết (TypeScript, `node:http`) thay vì Kong/Traefik: giải thích được từng chính sách |
 | 005 | Saga điều phối tập trung + outbox, thay vì choreography |
-| 006 | Engine quyết định nằm sau một hợp đồng API, thay được (hiện là Python đã chạy qua bộ dữ liệu mẫu); thay engine thì chạy bóng và so bộ kiểm hồi quy trước khi bật |
+| 006 | Engine quyết định nằm sau một hợp đồng API, thay được (hiện là engine Python); thay engine thì chạy bóng và so bộ kiểm hồi quy trước khi bật |
 | 010 | Ký và xác minh là một service: mọi lời gọi tới nhà cung cấp ký, kiểm thu hồi, dấu thời gian, tra cứu hoá đơn đi qua đây; xác minh chứng từ bất đồng bộ |
 | 007 | Tiền là chuỗi số nguyên đồng, không dùng số thực; dữ liệu mẫu (đơn vị triệu) quy đổi lúc nạp (D3, D4) |
 | 008 | Bộ dữ liệu của bài toán gốc chỉ là dữ liệu mẫu và bộ kiểm hồi quy, không phải đầu vào của sản phẩm (D1, D2) |
