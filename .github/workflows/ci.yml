@@ -36,6 +36,8 @@ jobs:
       - run: corepack enable
       - name: Base files unchanged outside the base flow
         run: node scripts/check-base-untouched.mjs
+      - name: Docs updated with the code
+        run: node scripts/check-docs-updated.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm lint
