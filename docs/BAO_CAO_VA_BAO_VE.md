@@ -2,7 +2,7 @@
 
 Tệp này là **kế hoạch viết** cho hai báo cáo, slide, video và buổi bảo vệ. Mỗi mục ghi: viết gì, lấy từ
 đâu (tài liệu mới trong repo hay tài liệu, ảnh cũ của CodeCash), sửa gì, ai viết, bao nhiêu trang.
-Định vị sản phẩm và khai báo kế thừa: `DINH_VI_SAN_PHAM.md`. Phần mã kế thừa: `TAN_DUNG_CODECASH.md`.
+Định vị sản phẩm: `DINH_VI_SAN_PHAM.md`. Phần mã tận dụng: `TAN_DUNG_CODECASH.md`.
 
 Đường dẫn `codecash/…` tính từ thư mục làm việc chung (thư mục cùng cấp với `btl-backend`).
 
@@ -12,12 +12,12 @@ chụp lại ảnh (§3.3) trước khi dán.
 ## 1. Năm nguyên tắc dùng lại tài liệu cũ
 
 1. **Dùng nội dung, không dùng khung cuộc thi.** Đoạn nào nói "ban tổ chức", "Data Pack chính thức",
-   "Vòng 3", "BTC_SUBMISSION" thì viết lại theo định vị SCW; số liệu của cuộc thi chỉ xuất hiện ở
-   chương đánh giá engine, ghi rõ là kết quả kế thừa.
+   "Vòng 3", "BTC_SUBMISSION" thì viết lại theo định vị SCW; số liệu engine chỉ xuất hiện ở chương
+   đánh giá, đo trên dữ liệu mẫu.
 2. **Mô tả kiến trúc cũ là quá khứ.** CodeCash là monolith; đoạn nào tả "một API", "engine chạy như
    tiến trình con" thì chỉ dùng ở mục "Hiện trạng ban đầu và vì sao tách" của báo cáo MS.
-3. **Ghi nguồn.** Mọi hình, bảng lấy từ CodeCash có chú thích "Nguồn: CodeCash, <tệp>" hoặc "vẽ lại
-   từ…". Bảng tổng hợp ở mục "Kế thừa và nguồn tham khảo" (§6).
+3. **Viết lại, không dán nguyên.** Đoạn lấy từ tài liệu cũ được viết lại theo giọng và thuật ngữ của
+   báo cáo (từ điển trạng thái), hình vẽ lại hoặc xuất lại theo cùng một bộ màu.
 4. **Ảnh giao diện chụp lại trên bản BTL.** Ảnh cũ (96 tệp) cho biết cần chụp màn nào, ở trạng thái
    nào; ảnh dán vào báo cáo phải chụp từ hệ thống SCW chạy qua gateway (§3.3).
 5. **Viết khi làm, không để cuối.** Ai chuyển xong một service thì viết luôn phần của mình (§9). Ngày
@@ -31,7 +31,7 @@ Tài liệu trong `codecash/docs/`. Cột "MS" và "LT" là chương, mục củ
 | --- | --- | --- | --- |
 | `NGHIEP_VU.md` (707 dòng) §1–4 | Phạm vi, vai trò và quyền, dữ liệu, vòng đời | MS 1.2–1.4; LT a | bỏ phần Data Pack là đầu vào duy nhất; vai trò giữ nguyên |
 | `NGHIEP_VU.md` §5–7 | Engine 9 bước, luật quyết định, tính tiền | MS 1.5 (quy tắc), MS 6.3 (đánh giá engine) | giữ; tiền theo D3/D4 nếu đổi |
-| `NGHIEP_VU.md` §8–10 | Confidence, đầu ra và truy vết, KPI | MS 6.3 | ghi là kế thừa; KPI đo lại nếu đổi engine |
+| `NGHIEP_VU.md` §8–10 | Confidence, đầu ra và truy vết, KPI | MS 6.3 | KPI đo lại nếu đổi engine |
 | `NGHIEP_VU.md` §11 | Ký số và tài liệu | MS 3 (signing), MS 5 (pháp lý của chữ ký) | gọi đúng "chữ ký điện tử mô phỏng" (P4) |
 | `NGHIEP_VU.md` §12 | Đối chiếu đề bài và câu trả lời ban tổ chức | **không dùng** | thuộc cuộc thi |
 | `NGHIEP_VU.md` §14 | Từ điển trạng thái | Phụ lục cả hai báo cáo | giữ nguyên, thêm `PENDING_*` |
@@ -46,7 +46,7 @@ Tài liệu trong `codecash/docs/`. Cột "MS" và "LT" là chương, mục củ
 | `07_HUONG_DAN_TRIEN_KHAI.md`, `32_KIEM_TRA_VA_KHOI_CHAY_LOCAL.md` | Triển khai, chạy local | MS 5.1 (cách chạy) | viết lại theo `compose.yaml`; giữ phần kiểm tra |
 | `30_HUONG_DAN_TIEP_QUAN_VA_PHAT_TRIEN_TIEP.md` | Tiếp quản, phát triển tiếp | MS 7 (hướng phát triển) | lọc ý còn đúng |
 | `KICH_BAN_DEMO.md` | Demo 60 giây và 5 phút, câu hỏi thường gặp | §8, §10 của tệp này | đổi sang câu chuyện SCW và luồng lỗi |
-| `pitch/GIAI_THICH_SO_LIEU_PITCH.md` | Giải thích số liệu: confidence, baseline, bộ kiểm 6.237 ca, 16 lỗi cố ý | MS 6.3; vấn đáp TV5 | ghi rõ kết quả kế thừa; chạy lại lệnh để có số mới nhất |
+| `pitch/GIAI_THICH_SO_LIEU_PITCH.md` | Giải thích số liệu: confidence, baseline, bộ kiểm 6.237 ca, 16 lỗi cố ý | MS 6.3; vấn đáp TV5 | chạy lại lệnh để có số mới nhất; bỏ ngữ cảnh pitch |
 | `archive/*` (33 tệp) | Lịch sử thiết kế, rà soát giao diện | tra cứu khi cần lý do một quyết định cũ | không đưa vào báo cáo |
 | Tài liệu tham khảo ngoài repo `docs/tham-khao/03_PHAN_TICH_PHAP_LY.md` | Căn cứ pháp lý | MS 1.6 (ràng buộc pháp lý), MS 7 (hạn chế) | giữ, dẫn đúng điều luật |
 
@@ -155,9 +155,8 @@ khai và kiểm thử; đánh giá; hạn chế.
 | **6. Đánh giá** | | **3** | | | TV5 chủ trì | |
 | 6.1 Đối chiếu yêu cầu đề | bảng MS-R1…R8, MS-B1…B4 | 1 | `PHAN_TICH_THIET_KE.md` §10.1 | | TV1 | |
 | 6.2 Số liệu thí nghiệm | tỷ lệ lỗi, p95, giao dịch treo, trùng | 1 | 5.4 | | TV6 | |
-| 6.3 Độ đúng của engine | kết quả trên dữ liệu mẫu, bộ ca kiểm, kiểm đột biến (ghi rõ kế thừa) | 1 | `NGHIEP_VU.md` §8–10, `GIAI_THICH_SO_LIEU_PITCH.md` | ảnh kiểm chứng bộ luật | TV5 | |
+| 6.3 Độ đúng của engine | kết quả trên dữ liệu mẫu, bộ ca kiểm, kiểm đột biến | 1 | `NGHIEP_VU.md` §8–10, `GIAI_THICH_SO_LIEU_PITCH.md` | ảnh kiểm chứng bộ luật | TV5 | |
 | **7. Hạn chế và hướng phát triển** | token còn sống 15 phút ở service khác; chữ ký mô phỏng; neo nội bộ; một máy Postgres | 1 | `LUAN_CU_KIEN_TRUC.md` §9–10, `DINH_VI_SAN_PHAM.md` §4.2 | | TV1 | |
-| **8. Kế thừa và nguồn tham khảo** | §6 | 1 | | | TV1 | |
 | Phụ lục | từ điển trạng thái, OpenAPI rút gọn, ADR | 3 | `NGHIEP_VU.md` §14, `PHAN_TICH_THIET_KE.md` §11 | | TV2 | |
 
 ## 5. Báo cáo LTWNC (≤ 20 trang)
@@ -174,27 +173,14 @@ khai và kiểm thử; đánh giá; hạn chế.
 | f | Ảnh giao diện các màn chính | 3 | §3.2 | 10–12 ảnh | mỗi người 2 ảnh |
 | g | Phân công và % đóng góp | 1 | `KICH_BAN_VIBE_CODE.md` §3, thống kê commit | bảng | TV1 |
 | h | Kết luận | 1 | | | TV1 |
-| | Kế thừa và nguồn tham khảo | 0,5 | §6 | | TV1 |
-| | Dự phòng | 1,5 | | | |
+| | Dự phòng | 2 | | | |
 
 Không dán mã dài (đề cấm); trích ngắn ≤ 15 dòng kèm đường dẫn tệp.
 
-## 6. Mục "Kế thừa và nguồn tham khảo" (mẫu, dùng cho cả hai báo cáo)
+## 6. Tài liệu tham khảo (cuối mỗi báo cáo)
 
-> Sản phẩm kế thừa bài dự thi **CodeCash** (Festival Chuyển đổi số 2026, Case 4), được sự đồng ý của
-> các tác giả. Nhóm giữ ý tưởng, đặc tả nghiệp vụ và engine quyết định; tách lại kiến trúc thành
-> microservices, sửa nghiệp vụ cho sát thực tế và làm mới các phần dưới đây.
-
-| Thành phần | Nguồn | Mức dùng | Người chuyển, sửa |
-| --- | --- | --- | --- |
-| Đặc tả nghiệp vụ, từ điển trạng thái | `codecash/docs/NGHIEP_VU.md` | giữ, sửa theo SCW | TV2 |
-| Engine quyết định (Python) | `codecash/apps/engine` | giữ nguyên, bọc FastAPI | TV5 |
-| Logic nghiệp vụ API | `codecash/apps/api/src/domain`, `trust` | chép rồi sửa theo service | chủ từng service |
-| Màn hình web | `codecash/apps/web/src/features` | giữ màn, viết lại lớp gọi API | chủ từng màn |
-| Chassis, gateway, identity, saga, outbox, hàng đợi, CI, compose, Postman, thí nghiệm lỗi, test web | — | **làm mới** | TV1, TV6, chủ service |
-| Sơ đồ BPMN, ERD | `codecash/docs/bpmn`, `diagrams` | giữ hoặc vẽ lại | ghi theo từng hình |
-
-Bảng đầy đủ đến từng mô-đun: cột "Hành động" của `TAN_DUNG_CODECASH.md`.
+Chỉ liệt kê văn bản pháp luật đã dẫn (`DINH_VI_SAN_PHAM.md` §4.2), tiêu chuẩn và tài liệu kỹ thuật
+(RFC 9457, OAuth 2.0 Security BCP, NIST SP 800-63B, tài liệu NestJS, React, RabbitMQ), và đề bài.
 
 ## 7. Slide Microservices (≤ 10) và người nói
 
@@ -240,7 +226,7 @@ DevTools khi làm mới token, Profiler trước/sau, chạy `pnpm check`).
 | 30/11–03/12 | Mỗi người: luồng của mình (MS 2.5) kèm ảnh chụp tạm; TV1: chương 2, 5.1–5.2 |
 | 04–07/12 | Saga, độ tin cậy (MS 4); chuyển script chụp màn hình (TV6) |
 | 08–10/12 | Thí nghiệm F1–F4 và số liệu (MS 5.4, 6.2); Profiler, Lighthouse, coverage (LT e) |
-| 11/12 | Chụp lại toàn bộ ảnh bằng script; ghép hai báo cáo; mục kế thừa |
+| 11/12 | Chụp lại toàn bộ ảnh bằng script; ghép hai báo cáo; tài liệu tham khảo |
 | 12/12 | Đọc chéo (mỗi người đọc chương của người kế), sửa thống nhất thuật ngữ theo từ điển trạng thái, xuất PDF |
 | 13–14/12 | Slide, diễn tập hai lần có bấm giờ, tập câu hỏi §10 |
 
@@ -259,8 +245,7 @@ Câu trả lời gợi ý ngắn; đọc thêm ở tệp ghi bên cạnh.
 | Token bị lộ thì sao? Đăng xuất có hết hiệu lực không? | access 15 phút; identity kiểm thu hồi ngay, service khác tới khi hết hạn; refresh bị chép thì lộ khi dùng lại, thu hồi cả họ | identity `SERVICE.md` mục Token |
 | Gateway có chứa nghiệp vụ không? | không: chỉ định tuyến và chính sách, không đọc body, không import mã service | `gateway/README.md` |
 | Vì sao GitHub Actions? | repo public miễn phí không giới hạn phút, gắn bảo vệ nhánh, có Docker cho job `stack` | `LUAN_CU_KIEN_TRUC.md` §7 |
-| Mã này có phải nhóm viết? | kế thừa CodeCash có đồng ý tác giả, khai báo ở mục kế thừa; phần làm mới là … (kể phần của mình); commit "port" tách riêng commit sửa | `DINH_VI_SAN_PHAM.md` §6 |
-| Engine đúng đến đâu? | kết quả trên dữ liệu mẫu và bộ ca kiểm kế thừa; bộ kiểm hồi quy chạy trong CI của decision; không suy rộng từ 20 mẫu | `NGHIEP_VU.md` §10, `GIAI_THICH_SO_LIEU_PITCH.md` |
+| Engine đúng đến đâu? | kết quả trên dữ liệu mẫu và bộ ca kiểm; bộ kiểm hồi quy chạy trong CI của decision; không suy rộng từ 20 mẫu | `NGHIEP_VU.md` §10, `GIAI_THICH_SO_LIEU_PITCH.md` |
 | Chữ ký có giá trị pháp lý không? | đây là chữ ký điện tử mô phỏng; muốn tương đương chữ ký tay phải dùng chữ ký số của tổ chức được cấp phép | `DINH_VI_SAN_PHAM.md` P4 |
 | Sao không Redux cho mọi thứ? (LTWNC) | Redux giữ phiên (state toàn cục thật); dữ liệu máy chủ là cache, TanStack Query lo cache, invalidation | `DINH_VI_SAN_PHAM.md` T5 |
 | Bảo vệ nhiều lớp ở đâu? (LTWNC) | route ẩn theo quyền; gateway kiểm token; guard kiểm quyền; service kiểm phạm vi dữ liệu | `PHAN_TICH_THIET_KE.md` §2 |

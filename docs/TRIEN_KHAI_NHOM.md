@@ -14,7 +14,7 @@ tệp này trong cùng PR với thay đổi đó.
 | Chassis: lỗi RFC 9457, DTO, lọc/nhập/xuất, `ServiceClient`, token RS256, `/health` có database | repo của contract, signing, execution, decision, payment, audit |
 | identity đầy đủ (18 endpoint, 34 test), gateway, `compose.yaml`, Postman 25 request, CI job `stack` xanh | outbox relay, RabbitMQ, consumer, DLQ (phần nền, TV1 + TV6) |
 | Web: khung, xác thực đầy đủ (đăng nhập, refresh, quên và đặt lại mật khẩu, mời, đổi mật khẩu), 54 test | các màn nghiệp vụ (trừ `platform`) |
-| Tài liệu: hệ thống, thiết kế, luận cứ, định vị, tận dụng, báo cáo, sổ tay này | đồng ý của tác giả CodeCash, thư báo giảng viên |
+| Tài liệu: hệ thống, thiết kế, luận cứ, định vị, tận dụng, báo cáo, sổ tay này | |
 
 ## 2. Ngày 0: trưởng nhóm (hôm nay)
 
@@ -22,15 +22,13 @@ Làm theo thứ tự; mỗi dòng có cách kiểm.
 
 | # | Việc | Cách làm | Xong khi |
 | --- | --- | --- | --- |
-| 1 | Xin đồng ý của các tác giả CodeCash không trong nhóm | mẫu thư `../docs/tham-khao/06_MAU_VAN_BAN.md` §5 | có trả lời bằng văn bản, lưu lại |
-| 2 | Báo hai giảng viên | một đoạn: kế thừa CodeCash, phần làm mới, môn nào chấm phần nào (`DINH_VI_SAN_PHAM.md` §6) | đã gửi |
-| 3 | Gom tài khoản GitHub của 5 người | | có đủ tên |
-| 4 | Thêm người vào 3 repo đang có (repo cha, identity, web) quyền Write | `gh api -X PUT repos/Tunhoclaptrinh/<repo>/collaborators/<tên> -f permission=push` | mọi người clone được |
-| 5 | Tạo 5 repo service NestJS | trong `btl-backend`: `scripts/new-service.sh <tên>` cho contract, signing, execution, payment, audit; `gh repo create Tunhoclaptrinh/smart-contract-services-<tên> --public`; push; `scripts/protect-branches.sh Tunhoclaptrinh/smart-contract-services-<tên>` | CI mỗi repo xanh |
-| 6 | Tạo repo decision (Python) | repo trống: FastAPI, `pyproject.toml`, `Dockerfile`, CI chạy `pytest`; chép `codecash/apps/engine` và `tests/*.py` theo mức GIỮ | `pytest` xanh trên CI |
-| 7 | Điền "Thông tin" trong `SERVICE.md` từng repo | chủ, cổng, database, tiền tố gateway (`HE_THONG.md` §1) | |
-| 8 | Đổi thương hiệu web sang Smart Contract Workflow (C8) | phần nền web: `brand.*` trong `locales`, `BrandMark`, tiêu đề | không còn chữ "CodeCash" trên giao diện |
-| 9 | Họp khởi động 45 phút | §3 | mỗi người biết việc ba ngày đầu |
+| 1 | Gom tài khoản GitHub của 5 người | | có đủ tên |
+| 2 | Thêm người vào 3 repo đang có (repo cha, identity, web) quyền Write | `gh api -X PUT repos/Tunhoclaptrinh/<repo>/collaborators/<tên> -f permission=push` | mọi người clone được |
+| 3 | Tạo 5 repo service NestJS | trong `btl-backend`: `scripts/new-service.sh <tên>` cho contract, signing, execution, payment, audit; `gh repo create Tunhoclaptrinh/smart-contract-services-<tên> --public`; push; `scripts/protect-branches.sh Tunhoclaptrinh/smart-contract-services-<tên>` | CI mỗi repo xanh |
+| 4 | Tạo repo decision (Python) | repo trống: FastAPI, `pyproject.toml`, `Dockerfile`, CI chạy `pytest`; chép `codecash/apps/engine` và `tests/*.py` theo mức GIỮ | `pytest` xanh trên CI |
+| 5 | Điền "Thông tin" trong `SERVICE.md` từng repo | chủ, cổng, database, tiền tố gateway (`HE_THONG.md` §1) | |
+| 6 | Đổi thương hiệu web sang Smart Contract Workflow (C8) | phần nền web: `brand.*` trong `locales`, `BrandMark`, tiêu đề | không còn chữ "CodeCash" trên giao diện |
+| 7 | Họp khởi động 45 phút | §3 | mỗi người biết việc ba ngày đầu |
 
 ## 3. Họp khởi động (45 phút)
 
@@ -39,7 +37,7 @@ Làm theo thứ tự; mỗi dòng có cách kiểm.
 | 0–5 | Sản phẩm trong một câu; BTL khác bài dự thi ở đâu | `DINH_VI_SAN_PHAM.md` §1–2 |
 | 5–12 | Toàn cảnh 8 thành phần, ai giữ cái nào | `HE_THONG.md` §1–2, `KICH_BAN_VIBE_CODE.md` §3 |
 | 12–20 | Đồng bộ hay hàng đợi, ba ranh giới dữ liệu | `LUAN_CU_KIEN_TRUC.md` §2–3 |
-| 20–27 | Tận dụng: 4 mức hành động, commit "port trước, sửa sau", 11 sửa chung C1–C11 | `TAN_DUNG_CODECASH.md` §1, §3 |
+| 20–27 | Tận dụng: 4 mức hành động, mã sạch, 12 sửa chung C1–C12 | `TAN_DUNG_CODECASH.md` §1, §3 |
 | 27–35 | Chạy thử cùng nhau: clone, `pnpm install && pnpm test`, `docker compose up`, đăng nhập web | §2 của `KICH_BAN_VIBE_CODE.md` |
 | 35–42 | "Xong là thế nào", nhịp làm việc, nơi hỏi | `KICH_BAN_VIBE_CODE.md` §3.1, §6 của tệp này |
 | 42–45 | Mỗi người nói việc ngày mai | §5 |
@@ -51,22 +49,21 @@ Làm theo thứ tự; mỗi dòng có cách kiểm.
 1. `git switch main && git pull && git fetch upstream` (có phần nền mới thì đồng bộ trước).
 2. `git switch -c feat/<svc>-<việc>`.
 3. Tra `TAN_DUNG_CODECASH.md` §4 (hành động, sửa gì) và `DOI_CHIEU_CODECASH.md` (tệp nào).
-4. **Port nguyên trạng**: chép tệp cũ vào `service/src/` giữ tên, chưa sửa logic; sửa tối thiểu cho
-   biên dịch được (import C1). Commit: `chore(<svc>): port <tệp> from codecash@<commit>`.
+4. Chép tệp cũ vào `service/src/` giữ tên hàm, tên trường, mã lỗi; sửa import (C1) cho biên dịch được.
 5. Liệt kê luật nghiệp vụ trong tệp (bắt AI liệt kê, kèm mục `NGHIEP_VU.md` hoặc mã BR) **trước** khi sửa.
-6. Sửa theo mã C1–C11 áp dụng cho tệp: mỗi nhóm sửa một commit (`refactor(<svc>): call decision over HTTP (C3)`).
+6. Sửa theo mã C1–C12 áp dụng cho tệp, gồm làm sạch chú thích và tham chiếu cũ (C12); mỗi nhóm sửa một
+   commit Conventional Commits (`feat(<svc>): …`, `refactor(<svc>): call decision over HTTP`).
 7. DTO cho mọi body mới (C4); route REST đúng §6 thiết kế (C10).
 8. Test: mỗi endpoint một ca đúng + một ca lỗi 4xx; mỗi quy tắc mình phụ trách một ca vi phạm; chép
    test cũ liên quan (`TAN_DUNG_CODECASH.md` §6).
 9. Cập nhật `openapi.yaml`, `SERVICE.md` (sơ đồ mã, endpoint, rà soát, cải tiến): `pnpm check:docs` xanh.
 10. Thêm ≥ 1 request Postman cho endpoint mới (`btl-backend/postman/`, PR vào repo cha `main`).
-11. `pnpm typecheck && pnpm lint && pnpm format:check && pnpm test` xanh → push → PR (≤ 400 dòng tự viết,
-    không tính tệp port nguyên trạng) → một người duyệt → merge commit.
+11. `pnpm typecheck && pnpm lint && pnpm format:check && pnpm test` xanh → push → PR (PR nhỏ, một việc) → một người duyệt → merge commit.
 
 ### 4.2. Web (một màn của `codecash/apps/web/src/features`)
 
 1. Nhánh `feat/<phần>-<màn>` từ `main` của `btl-frontend`.
-2. Port nguyên trạng thư mục màn vào `src/features/<phần>/`, commit `chore(<phần>): port <màn> from codecash@<commit>`.
+2. Chép thư mục màn vào `src/features/<phần>/`, giữ cấu trúc và tên; làm sạch chú thích cũ (C12).
 3. Thay lời gọi `shared/api/domain.ts`, `workflow.ts` bằng `src/features/<phần>/api.ts` theo `openapi.yaml`.
 4. Sửa C6 (tiền), C7 (chữ BTC, Data Pack); mọi chữ qua i18next, cả vi và en.
 5. Route lazy trong `src/router.tsx`, quyền trong `navConfig.ts`.
@@ -138,7 +135,7 @@ Cắt từ trên xuống; mỗi bước ghi vào `DINH_VI_SAN_PHAM.md` §7.
 | 7 | Thu audit về mức tối thiểu (nhận nhật ký, `/audit/verify`, thông báo trong ứng dụng); thiếu người thì TV1 nhận phần còn lại | vẫn 6 service | màn DLQ, neo |
 
 Không bao giờ cắt: database riêng, gateway, saga S1 và S4 (ít nhất bù trừ + PENDING), F1 và F2 có số
-liệu, Postman ≥ 10 request, test web ≥ 15 ca và độ phủ ≥ 50%, mục kế thừa trong báo cáo.
+liệu, Postman ≥ 10 request, test web ≥ 15 ca và độ phủ ≥ 50%.
 
 ## 9. Rủi ro và ai gỡ
 

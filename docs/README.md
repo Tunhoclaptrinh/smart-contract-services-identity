@@ -10,18 +10,18 @@ mình; mỗi tệp tự nói tệp nào đọc tiếp.
 | Thành viên mới, hôm nay bắt đầu | `DINH_VI_SAN_PHAM.md` → `HE_THONG.md` → `KICH_BAN_VIBE_CODE.md` §3 → `TRIEN_KHAI_NHOM.md` §4–5 → `service/SERVICE.md` của repo mình | 45 phút |
 | Chuẩn bị chuyển mã cũ | `TAN_DUNG_CODECASH.md` (mục service của mình) → `DOI_CHIEU_CODECASH.md` → `CLAUDE.md` §5 | 20 phút |
 | Viết báo cáo, slide, chuẩn bị bảo vệ | `BAO_CAO_VA_BAO_VE.md` → `LUAN_CU_KIEN_TRUC.md` → `PHAN_TICH_THIET_KE.md` | 40 phút |
-| Trưởng nhóm, điều phối | `TRIEN_KHAI_NHOM.md` → `DINH_VI_SAN_PHAM.md` §6–7 → `KICH_BAN_VIBE_CODE.md` §4 | |
+| Trưởng nhóm, điều phối | `TRIEN_KHAI_NHOM.md` → `DINH_VI_SAN_PHAM.md` §7 → `KICH_BAN_VIBE_CODE.md` §4 | |
 | AI (Claude Code, Cursor…) | `CLAUDE.md` của repo (bảng "Cần biết gì thì đọc đâu" trỏ về các tệp dưới) | |
 
 ## Các tệp
 
 | Tệp | Trả lời câu hỏi | Ai giữ |
 | --- | --- | --- |
-| `DINH_VI_SAN_PHAM.md` | BTL làm sản phẩm gì, khác bài dự thi ở đâu, sửa gì cho sát thực tế, khai báo kế thừa | trưởng nhóm |
+| `DINH_VI_SAN_PHAM.md` | BTL làm sản phẩm gì, khác bài dự thi ở đâu, sửa gì cho sát thực tế, nhật ký quyết định | trưởng nhóm |
 | `HE_THONG.md` | Toàn cảnh: service, cổng, database, token, luồng chính, chạy cả hệ | TV1 |
 | `PHAN_TICH_THIET_KE.md` | Phạm vi, vai trò, 25 quy tắc, API từng service, saga, thí nghiệm, ma trận yêu cầu hai môn | chủ từng service sửa mục của mình |
 | `LUAN_CU_KIEN_TRUC.md` | Vì sao kiến trúc, công nghệ, hàng đợi, CI; luồng L1–L8 đồng bộ hay bất đồng bộ | TV1, TV6 |
-| `TAN_DUNG_CODECASH.md` | Từng phần mã cũ: giữ, chỉnh, mới, bỏ; sửa chung C1–C11 | chủ từng service |
+| `TAN_DUNG_CODECASH.md` | Từng phần mã cũ: giữ, chỉnh, mới, bỏ; sửa chung C1–C12 | chủ từng service |
 | `DOI_CHIEU_CODECASH.md` | Tệp cũ nào sang service nào (backend); web: `btl-frontend/docs/DOI_CHIEU_CODECASH.md` | chủ từng service |
 | `BAO_CAO_VA_BAO_VE.md` | Tài liệu, ảnh, sơ đồ cũ dùng vào đâu; dàn ý hai báo cáo; slide; demo; câu hỏi vấn đáp | cả nhóm |
 | `KICH_BAN_VIBE_CODE.md` | Ai làm gì, lịch, "xong là thế nào", prompt mẫu, bẫy khi dùng AI | trưởng nhóm |

@@ -11,15 +11,16 @@ thì sửa dòng và ghi lý do ở `DINH_VI_SAN_PHAM.md` §7.
 
 ## 1. Bốn mức hành động
 
-| Ký hiệu | Nghĩa | Ví dụ | Commit |
-| --- | --- | --- | --- |
-| **GIỮ** | Chép nguyên, chỉ đổi đường dẫn import | engine Python, bộ UI, CSS module của màn | `chore(<svc>): port <tệp> from codecash@<commit>` |
-| **CHỈNH** | Chép rồi sửa: tách theo service, gọi HTTP thay vì gọi hàm, đổi đơn vị, thêm DTO | `domain/drafts.ts`, `domain/actions/*` | commit port nguyên trạng **trước**, rồi từng commit sửa |
-| **MỚI** | Viết mới vì CodeCash không có | gateway, saga, outbox, consumer, refresh token | commit thường |
-| **BỎ** | Không chuyển | MongoDB, công cụ chấm của cuộc thi, Render | không commit |
+| Ký hiệu | Nghĩa | Ví dụ |
+| --- | --- | --- |
+| **GIỮ** | Chép nguyên, chỉ đổi đường dẫn import | engine Python, bộ UI, CSS module của màn |
+| **CHỈNH** | Chép rồi sửa: tách theo service, gọi HTTP thay vì gọi hàm, đổi đơn vị, thêm DTO | `domain/drafts.ts`, `domain/actions/*` |
+| **MỚI** | Viết mới vì chưa có | gateway, saga, outbox, consumer, refresh token |
+| **BỎ** | Không chuyển | MongoDB, công cụ chấm của cuộc thi, Render |
 
-Commit "port nguyên trạng trước, sửa sau" là bắt buộc: người chấm nhìn diff thấy rõ phần mỗi người sửa,
-và mình cũng `git diff` được để rà soát (`DINH_VI_SAN_PHAM.md` §6).
+Mã chuyển sang phải **sạch**: không còn chú thích, đường dẫn, tên biến nhắc tới CodeCash, ban tổ chức,
+Data Pack chính thức hay cuộc thi (C12 ở §3); commit theo Conventional Commits như mọi việc khác, mỗi
+commit một thay đổi có nghĩa (`feat(contract): add milestone split check`).
 
 ## 2. Toàn cảnh khối lượng
 
@@ -54,6 +55,7 @@ và mình cũng `git diff` được để rà soát (`DINH_VI_SAN_PHAM.md` §6).
 | C8 | Chuỗi thương hiệu "CodeCash" (`brand.*`, `BrandMark`, tiêu đề) | "Smart Contract Workflow" | định vị BTL |
 | C9 | Gemini, khoá API trong mã hoặc `.env` cũ | tắt mặc định, không chép khoá (T1) | bảo mật, phạm vi |
 | C10 | `workflow.controller.ts` kiểu RPC (`POST /workflow/:module/:action`) | route REST theo tài nguyên ở `PHAN_TICH_THIET_KE.md` §6 | MS-R3 chấm REST đúng method và status |
+| C12 | Chú thích, tên tệp, đường dẫn trong mã nhắc `codecash`, `apps/api/src/…`, `tests/foundation/…`, "BTC", cuộc thi | viết lại chú thích theo mã hiện tại; bỏ tham chiếu đường dẫn cũ | mã sạch, đọc độc lập được |
 | C11 | Test gọi thẳng hàm nội bộ của phần khác | test trong service, phần khác giả bằng server HTTP tạm (như `service-client.test.mjs`) | test độc lập từng service |
 
 Ước lượng: C1, C4, C5, C10 chiếm phần lớn công sửa ở backend; C6, C7, C8 ở web. AI làm nhanh các mục

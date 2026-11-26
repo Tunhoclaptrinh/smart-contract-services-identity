@@ -15,7 +15,7 @@ export class PostgresStore {
   private pool: pg.Pool;
   constructor(
     url: string,
-    private schema = process.env.PG_SCHEMA ?? "codecash",
+    private schema = process.env.PG_SCHEMA ?? "app",
   ) {
     if (!/^[a-z_][a-z0-9_]{0,40}$/.test(schema))
       throw new Error("PG_SCHEMA must be a plain lower-case identifier");
@@ -139,7 +139,7 @@ export class PostgresStore {
     try {
       await client.query("BEGIN");
       await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [
-        `codecash:${this.schema}`,
+        `sc:${this.schema}`,
       ]);
       const result = await fn(client);
       await client.query("COMMIT");

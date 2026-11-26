@@ -32,7 +32,7 @@ Không chép chassis vào `service/` để lách.
 | --- | --- |
 | Bộ tài liệu, đọc gì trước theo vai trò | `docs/README.md` |
 | BTL khác bài dự thi ở đâu, sửa gì cho sát thực tế | `docs/DINH_VI_SAN_PHAM.md` |
-| Phần mã cũ nào giữ, chỉnh, bỏ; sửa chung C1–C11 | `docs/TAN_DUNG_CODECASH.md` |
+| Phần mã cũ nào giữ, chỉnh, bỏ; sửa chung C1–C12 | `docs/TAN_DUNG_CODECASH.md` |
 | Toàn cảnh: service, cổng, schema, ai gọi ai, token, luồng chính | `docs/HE_THONG.md` |
 | Phạm vi, tính năng, quy tắc BR, API từng service, saga, ma trận yêu cầu hai môn | `docs/PHAN_TICH_THIET_KE.md` |
 | Vì sao chọn kiến trúc, công nghệ nào; luồng chính đồng bộ hay bất đồng bộ, đi qua service nào | `docs/LUAN_CU_KIEN_TRUC.md` |

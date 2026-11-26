@@ -66,7 +66,7 @@ export class Repository implements OnModuleDestroy {
         "documents",
         "datasets",
         "audit",
-        // Workflow database (apps/api/src/domain/records.ts).
+        // Workflow collections.
         "parties",
         "contracts",
         "milestones",

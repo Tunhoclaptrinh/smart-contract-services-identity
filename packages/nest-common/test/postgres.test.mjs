@@ -9,7 +9,7 @@ import { createRequire } from "node:module";
 
 const url = process.env.DATABASE_URL;
 const skip = url ? false : "DATABASE_URL is not set";
-const schema = `codecash_test_${process.pid}`;
+const schema = `sc_test_${process.pid}`;
 const pg = createRequire(
   join(process.cwd(), "packages/nest-common/package.json"),
 )("pg");
@@ -17,7 +17,7 @@ let repo, dir, client;
 
 before(async () => {
   if (skip) return;
-  dir = await mkdtemp(join(tmpdir(), "codecash-pg-"));
+  dir = await mkdtemp(join(tmpdir(), "sc-pg-"));
   Object.assign(process.env, {
     REPO_ROOT: process.cwd(),
     DATA_DIR: dir,

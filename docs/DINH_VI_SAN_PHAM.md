@@ -1,7 +1,7 @@
 # Định vị sản phẩm: từ bài dự thi lên bài tập lớn
 
 Đọc trước tiên nếu bạn mới vào nhóm. Tệp này trả lời: **BTL làm sản phẩm gì, cho ai, khác bài dự thi
-CodeCash ở đâu, sửa những gì cho sát thực tế, và khai báo phần kế thừa thế nào.** Tận dụng mã và tài
+CodeCash ở đâu, và sửa những gì cho sát thực tế.** Tận dụng mã và tài
 liệu cũ cụ thể ra sao: `TAN_DUNG_CODECASH.md`. Báo cáo và bảo vệ: `BAO_CAO_VA_BAO_VE.md`. Triển khai
 từng ngày: `TRIEN_KHAI_NHOM.md`.
 
@@ -16,8 +16,8 @@ và ghi một dòng vào §7 "Nhật ký quyết định".
 
 Tên sản phẩm trong BTL: **Smart Contract Workflow** (gọi tắt SCW). "CodeCash" là tên bài dự thi; trên
 giao diện, tài liệu và báo cáo BTL dùng tên SCW (thay chuỗi thương hiệu `brand.*` trong `locales`, logo
-`BrandMark`, tiêu đề tài liệu). Tên miền tài khoản demo (`@codecash.vn`, `@novaan.vn`, `@phuminh.vn`)
-giữ được vì là dữ liệu mẫu, nhưng nên đổi `@codecash.vn` thành tên miền của SCW để nhất quán.
+`BrandMark`, tiêu đề tài liệu). Tài khoản demo của đơn vị vận hành dùng tên miền `@scw.vn` (`sysadmin@scw.vn`, `auditor@scw.vn`); tài khoản
+của các công ty mẫu (`@novaan.vn`, `@phuminh.vn`) giữ nguyên.
 
 ## 2. Bài dự thi và bài tập lớn khác nhau ở đâu
 
@@ -27,7 +27,7 @@ giữ được vì là dữ liệu mẫu, nhưng nên đổi `@codecash.vn` thà
 | Câu hỏi được chấm | Engine có ra đúng quyết định trên **Data Pack** cho sẵn không (405 mốc), có giải thích được không | Sản phẩm có **kiến trúc đúng** (service, gateway, độ tin cậy, container) và **web đúng kỹ thuật** (TypeScript, state, hiệu năng, test, phân quyền) không; nhóm có hiểu và giải thích được không |
 | Dữ liệu vào | Data Pack cố định: 100 hợp đồng, 405 mốc, 1.134 sự kiện, 65 bên, 128 luật | Người dùng **tự tạo** trong ứng dụng: đăng ký công ty, soạn hợp đồng, ký, nộp chứng từ. Data Pack chỉ còn là **dữ liệu mẫu** và **bộ kiểm hồi quy** |
 | Kiến trúc | Một API NestJS (monolith mô-đun) + engine Python gọi như tiến trình con + web | 6 service nghiệp vụ + identity + gateway, mỗi service một database, saga, outbox, hàng đợi |
-| Người làm | Nhóm dự thi (5 tác giả trong lịch sử commit) | **Nhóm BTL 6 người**, mỗi người một lát dọc, commit bằng tài khoản của mình |
+| Người làm | Nhóm dự thi | **Nhóm BTL 6 người**, mỗi người một lát dọc, commit bằng tài khoản của mình |
 | Thước đo thành công | Macro-F1, số ca kiểm, đầu ra đúng mẫu ban tổ chức | Đủ yêu cầu hai đề (`PHAN_TICH_THIET_KE.md` §10), demo trực tiếp chạy đủ luồng, thí nghiệm lỗi có số liệu, từng người trả lời được vấn đáp |
 | Sản phẩm hướng tới | Chứng minh ý tưởng trước ban giám khảo | Một sản phẩm dùng được thật ở quy mô doanh nghiệp vừa (§4 sửa cho sát thực tế) |
 
@@ -109,28 +109,11 @@ trạng thái) mà chưa ghi vào §7 và được trưởng nhóm đồng ý** 
 | Chương đánh giá của báo cáo | Số liệu đúng sai của engine, bộ ca kiểm, kiểm đột biến (`BAO_CAO_VA_BAO_VE.md` §4) |
 | Mẫu hợp đồng | 4 quy trình mốc thành mẫu hợp đồng có sẵn (N2) |
 
-## 6. Liêm chính học thuật và khai báo kế thừa
+## 6. Phần nhóm BTL làm mới
 
-Tận dụng phần lớn mã CodeCash là hợp lệ **nếu minh bạch**. Đây là điều kiện, không phải thủ tục:
-
-1. **Đồng ý của tác giả.** Lịch sử commit CodeCash có 5 tác giả. Với mỗi tác giả không thuộc nhóm BTL,
-   cần đồng ý bằng văn bản (tin nhắn, email) cho phép dùng lại mã trong BTL. Mẫu thư:
-   `../docs/tham-khao/06_MAU_VAN_BAN.md` §5 (ngoài repo). Lưu bản đồng ý trong thư mục tài liệu của nhóm.
-2. **Báo trước giảng viên.** Gửi cả hai giảng viên một đoạn ngắn: sản phẩm kế thừa bài dự thi CodeCash
-   (tên, cuộc thi, thời gian); phần kế thừa và phần làm mới; một sản phẩm dùng cho hai môn và môn nào
-   chấm phần nào (`../docs/tham-khao/01_PHAN_TICH_YEU_CAU_HAI_MON.md` §7.2).
-3. **Mục "Kế thừa và nguồn tham khảo" trong cả hai báo cáo**, có bảng: thành phần, nguồn (CodeCash, tệp
-   hoặc thư mục, commit), mức dùng (giữ nguyên, chép rồi sửa, viết mới), ai trong nhóm chuyển và sửa.
-   Bảng lấy thẳng từ cột "Hành động" của `TAN_DUNG_CODECASH.md`.
-4. **Lịch sử commit phản ánh đúng công sức.** Mỗi lần chép mã cũ: commit riêng `chore(<svc>): port <tệp> from codecash@<commit>`,
-   rồi các commit sửa sau đó tách riêng. Người chấm thấy rõ phần chép và phần mỗi người tự làm.
-   Không gom một commit "thêm 3.000 dòng".
-5. **Ai chuyển phần nào thì giải thích được phần đó.** Đây là lý do mỗi người một lát dọc; vấn đáp hỏi
-   vào phần mình phụ trách.
-
-Phần nhóm BTL **làm mới hoàn toàn** (nói được với giảng viên): chassis microservice, tách 6 service,
-gateway, token RS256 và refresh, saga, outbox, hàng đợi, độ tin cậy, compose, CI, Postman, thí nghiệm
-lỗi, các màn xác thực, test front-end, và mọi sửa đổi ở §4.
+Chassis microservice, tách 6 service, gateway, token RS256 và refresh, saga, outbox, hàng đợi, độ tin
+cậy, compose, CI, Postman, thí nghiệm lỗi, các màn xác thực, test front-end, và mọi sửa đổi ở §4. Đây
+là phần mỗi người nói sâu khi vấn đáp (cùng phần nghiệp vụ mình chuyển và sửa).
 
 ## 7. Nhật ký quyết định
 
