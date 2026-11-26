@@ -207,9 +207,10 @@ khác.
 | `decision.made` | decision | execution, audit | `evaluationId` |
 | `payment.order_created`, `payment.settled`, `payment.failed` | payment | execution, audit | `orderId` |
 
-Hàng đợi (RabbitMQ) chỉ dùng cho sự kiện **nhiều bên nhận hoặc bên phát không được phụ thuộc bên
-nhận**: `contract.activated`, mục nhật ký về audit, thông báo, `payment.settled`. Luồng tiền và luồng
-chấm mốc là đồng bộ có PENDING. Thiếu thời gian thì outbox + gửi HTTP có thử lại thay cho broker
+Hàng đợi (RabbitMQ) dùng ở năm chỗ, hai nhóm: sự kiện **nhiều bên nhận hoặc bên phát không được phụ
+thuộc bên nhận** (`contract.activated`, `payment.settled`, mục nhật ký về audit, thông báo) và **việc
+chậm hoặc nhiều** (yêu cầu xác minh chứng từ, chấm lại theo lô khi công bố luật). Luồng tiền và luồng
+chấm mốc thường ngày là đồng bộ có PENDING. Thiếu thời gian thì outbox + gửi HTTP có thử lại thay cho broker
 (`LUAN_CU_KIEN_TRUC.md` §6).
 
 Gói hợp đồng v1 (`contract.activated`): hợp đồng (mã, loại, giá trị dạng chuỗi thập phân, thời hạn,

@@ -50,7 +50,7 @@ phần sâu của mình.
 | TV2 | contract | `contracts`: danh sách, wizard soạn có lưu nháp, số hoá mốc, rà soát, bình luận | BR-A01…A08 | bước 1 của S1 | Compound `<MilestoneBuilder>`, hook `usePersistentDraft<T>`, một schema kiểm cả web và service |
 | TV3 | signing (gồm tài liệu và xác minh) | `signing`: vị trí ký, trình tự, ký; trang khách xác minh mã băm; trạng thái xác minh chứng từ | BR-A09…A12 | S1, phát S2; F3 | vai trò khách, upload kiểm loại tệp, giao diện đúng lượt |
 | TV4 | execution | `milestones` (việc cần làm, bảng mốc, chi tiết, chứng từ), `disputes`, ngoại lệ | BR-B03, B05, B08, B09, B11, B12 | S3, nhận S2; F1 | bảng ≥ 200 dòng ảo hoá + Profiler trước/sau, `useListQuery<T>`, `useDebouncedValue<T>` |
-| TV5 | decision (Python FastAPI quanh `codecash_engine`), payment | `decisions` (`<DecisionTrace>`, bộ luật, chạy thử), `payments` | BR-B01, B02, B04, B06, B07, B10 | S4; F2 | Compound `<DecisionTrace>`, type guard `isPayableDecision`, tiền chuỗi thập phân |
+| TV5 | decision (engine sau hợp đồng API; hiện Python FastAPI), payment | `decisions` (`<DecisionTrace>`, bộ luật, chạy thử), `payments` | BR-B01, B02, B04, B06, B07, B10 | S4; F2 | Compound `<DecisionTrace>`, type guard `isPayableDecision`, tiền chuỗi thập phân |
 | TV6 | audit (gồm thông báo); outbox, consumer, DLQ (phần nền, cùng TV1) | `audit` (nhật ký, kiểm toàn vẹn), `dashboard`, thông báo | — | F4, k6 | Lighthouse trước/sau tách bundle, hạ tầng test web |
 
 Ai sở hữu tệp cũ nào: `docs/DOI_CHIEU_CODECASH.md` (backend), `btl-frontend/docs/DOI_CHIEU_CODECASH.md` (web).

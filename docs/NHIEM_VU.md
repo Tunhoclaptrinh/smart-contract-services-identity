@@ -57,7 +57,7 @@ git clone git@github.com:Tunhoclaptrinh/smart-contract-services.git btl-backend
 git clone git@github.com:Tunhoclaptrinh/smart-contract-services-identity.git btl-backend-identity
 git clone git@github.com:Tunhoclaptrinh/smart-contract-services-<tên>.git btl-backend-<tên>
 git clone git@github.com:Tunhoclaptrinh/smart-contract-web.git btl-frontend
-cd btl-backend-<tên> && pnpm install && pnpm test                            # phải xanh
+cd btl-backend-<tên> && pnpm install && pnpm test                            # phải xanh (decision: pytest)
 cd ../btl-backend && docker compose up --build --wait                       # cả hệ, cổng 3000
 cd ../btl-frontend && pnpm install && pnpm dev                              # http://127.0.0.1:5173
 ```

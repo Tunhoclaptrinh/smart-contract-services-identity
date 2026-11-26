@@ -64,7 +64,11 @@ trạng thái) mà chưa ghi vào §7 và được trưởng nhóm đồng ý** 
 | D5 | Mã hợp đồng, mã bên theo Data Pack (`CT0103`, `B010`, `S015`) | Mã sinh tự động theo tổ chức và năm (`NOVA-2026-0001`); mã Data Pack giữ cho dữ liệu mẫu | Doanh nghiệp tự đặt quy tắc mã | S | TV2 |
 | D6 | `parties` (bên của Data Pack) nằm cùng chỗ với hợp đồng | identity sở hữu tổ chức; execution giữ bản sao chỉ đọc theo mã (`LUAN_CU_KIEN_TRUC.md` §2) | Một nguồn sự thật cho thông tin công ty | M | TV1, TV4 |
 
-### 4.2. Pháp lý (đối chiếu chi tiết: `../docs/tham-khao/03_PHAN_TICH_PHAP_LY.md`, ngoài repo)
+### 4.2. Pháp lý
+
+Bảng dưới đủ để làm và để viết báo cáo: mỗi dòng có điều luật làm căn cứ. Khi viết báo cáo, mở văn
+bản gốc để trích đúng; với Luật Xây dựng 2025 (hiệu lực 01/07/2026) cần kiểm lại trần phạt nếu mở rộng
+sang hợp đồng xây dựng.
 
 | # | Hiện trạng | Sửa thành | Căn cứ | Mức | Ai |
 | --- | --- | --- | --- | --- | --- |

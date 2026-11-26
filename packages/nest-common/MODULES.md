@@ -75,7 +75,7 @@ Toán tử theo kiểu: chuỗi `eq ne in nin contains startsWith isNull`; số 
 | `utils/query-builder.ts` | `parseFilterConditions`, `meets`, `operatorsFor`, `compareCells` (thứ tự tiếng Việt) |
 | `utils/csv.ts`, `utils/csv-parse.ts`, `utils/xlsx.ts` | Ghi CSV (BOM, chống chèn công thức `safeCell`), đọc CSV RFC 4180, ghi XLSX; `attachmentHeader`, `stampedName` |
 | `field-validation.ts` | `fieldProblem`: luật một trường, **cùng bản** với `@codecash/contracts` ở web |
-| `listing.ts` | Engine danh sách trong bộ nhớ cho dữ liệu không qua `/resources` (Data Pack, luồng); cùng ý nghĩa `contains`/`gte`/`lte` |
+| `listing.ts` | Engine danh sách trong bộ nhớ cho dữ liệu không qua `/resources` (dữ liệu mẫu, luồng); cùng ý nghĩa `contains`/`gte`/`lte` |
 
 ## Định dạng lỗi
 

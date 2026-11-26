@@ -45,7 +45,7 @@ cũ chạy gần như nguyên.
 | `common/roles.ts` | Đã ở chassis (`orgAdminRefusal`) |
 | Test: `tests/foundation/resource.test.mjs`, phần auth của `workflow.test.mjs` | |
 
-Cải tiến gợi ý: DTO + `ValidationPipe` cho body (`VALIDATION_FAILED`), `POST /auth/refresh`, thu hồi token (`tokenVersion`) có test.
+Đã làm: DTO cho mọi body, refresh token xoay vòng, đổi và quên mật khẩu, mời thành viên, khoá tài khoản, token RS256 + JWKS (xem `SERVICE.md` của identity).
 
 ### contract (TV2) — soạn và rà soát hợp đồng
 

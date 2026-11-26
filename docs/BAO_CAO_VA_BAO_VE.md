@@ -48,7 +48,7 @@ Tài liệu trong `codecash/docs/`. Cột "MS" và "LT" là chương, mục củ
 | `KICH_BAN_DEMO.md` | Demo 60 giây và 5 phút, câu hỏi thường gặp | §8, §10 của tệp này | đổi sang câu chuyện SCW và luồng lỗi |
 | `pitch/GIAI_THICH_SO_LIEU_PITCH.md` | Giải thích số liệu: confidence, baseline, bộ kiểm 6.237 ca, 16 lỗi cố ý | MS 6.3; vấn đáp TV5 | chạy lại lệnh để có số mới nhất; bỏ ngữ cảnh pitch |
 | `archive/*` (33 tệp) | Lịch sử thiết kế, rà soát giao diện | tra cứu khi cần lý do một quyết định cũ | không đưa vào báo cáo |
-| Tài liệu tham khảo ngoài repo `docs/tham-khao/03_PHAN_TICH_PHAP_LY.md` | Căn cứ pháp lý | MS 1.6 (ràng buộc pháp lý), MS 7 (hạn chế) | giữ, dẫn đúng điều luật |
+| `DINH_VI_SAN_PHAM.md` §4.2 (trong repo) | Căn cứ pháp lý theo từng điểm sửa | MS 1.6 (ràng buộc pháp lý), MS 7 (hạn chế) | giữ, dẫn đúng điều luật |
 
 Tài liệu mới trong repo này đã viết sẵn phần lớn chương kiến trúc:
 

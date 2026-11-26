@@ -41,7 +41,7 @@ Không chép chassis vào `service/` để lách.
 | Một service: dữ liệu, endpoint, sơ đồ mã, sơ đồ luồng | `service/SERVICE.md`, `service/openapi.yaml` |
 | Nghiệp vụ: vai trò, vòng đời, luật, tính tiền, mã trạng thái | `../codecash/docs/NGHIEP_VU.md` (bản duy nhất; mục 14 là từ điển trạng thái) |
 | Luồng đầu–cuối, thiết kế bảng | `../codecash/docs/33_LUONG_NGHIEP_VU_DAU_CUOI.md`, `../codecash/docs/31_THIET_KE_CSDL_POSTGRES.md` |
-| Dữ liệu ban tổ chức (Data Pack) | `../codecash/BangD-Case4/DataPack-CASE4_SmartContractWorkflow/` |
+| Dữ liệu mẫu của bài toán gốc (100 hợp đồng, 405 mốc) | `../codecash/BangD-Case4/DataPack-CASE4_SmartContractWorkflow/` |
 | Tệp cũ nào chuyển sang service nào | `docs/DOI_CHIEU_CODECASH.md` |
 | Ai làm gì, ngày nào, prompt mẫu | `docs/KICH_BAN_VIBE_CODE.md` |
 | Quy trình nhánh, cấu trúc repo, kéo phần nền | `docs/QUY_TRINH_NHANH.md`, `docs/KIEN_TRUC_REPO.md` |
@@ -96,7 +96,7 @@ sửa `service/SERVICE.md`, hoặc sửa `packages/nest-common/src/**` mà khôn
 - SoD-1: `ADMIN_AUDITOR` xử lý ngoại lệ, `SYSTEM_ADMIN` quản trị tài khoản và cấu hình, `AUDITOR`
   chỉ đọc.
 - Không chép thông tin đăng nhập, `.env` từ repo cũ; không ghi bí mật vào mã.
-- Mỗi service một schema PostgreSQL (`PG_SCHEMA=<tên>`), cổng theo `docs/HE_THONG.md`.
+- Mỗi service một database PostgreSQL riêng (`DATABASE_URL`, schema bên trong `PG_SCHEMA=<tên>`); cổng theo `docs/HE_THONG.md`.
 
 ## 7. Lệnh
 

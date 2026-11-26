@@ -18,9 +18,9 @@ Thư mục repo service: `btl-backend-<tên>`; repo trên GitHub: `smart-contrac
 | --- | --- | --- |
 | **`smart-contract-services`** (repo cha) | Nhánh `base`: chassis `packages/nest-common`, `packages/contracts` (`resources.json`, `permissions.json`), khuôn `service/`, cấu hình chung (TypeScript, ESLint, Prettier, CI, Dockerfile). Nhánh `main`: `base` + gateway, `compose.yaml`, Postman, script kéo các repo service | Trưởng nhóm (nền), TV1 (gateway, compose) |
 | **`smart-contract-services-<tên>`** (repo service) | Bản sao nhánh `base` của repo cha + mã của service trong `service/` | Chủ service đó |
-| `smart-contract-services-decision` | Python FastAPI quanh `codecash_engine`; không dùng chassis Node, không có `upstream`. Vẫn giữ `CLAUDE.md` (chép từ repo cha, sửa phần lệnh) và `SERVICE.md` | TV5 |
+| `smart-contract-services-decision` | Service quyết định: engine sau một hợp đồng API (hiện là Python, FastAPI); không dùng chassis Node, không có `upstream`. Vẫn giữ `CLAUDE.md` (chép từ repo cha, sửa phần lệnh) và `SERVICE.md` | TV5 |
 
-Mỗi repo service tự build, tự test, có CI và image riêng: đúng "mỗi service có mã và dữ liệu riêng" của đề. Dữ liệu riêng: mỗi service một schema PostgreSQL (`PG_SCHEMA=<tên>`), không đọc bảng của service khác.
+Mỗi repo service tự build, tự test, có CI và image riêng, nên mỗi service phát hành theo nhịp của nó (`LUAN_CU_KIEN_TRUC.md` §2.3). Dữ liệu riêng: mỗi service **một database và một tài khoản database** (`infra/postgres-init.sql`, `DATABASE_URL`), schema bên trong đặt bằng `PG_SCHEMA`; không service nào đọc database của service khác.
 
 ## Repo service lấy phần nền mới thế nào
 

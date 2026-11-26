@@ -8,6 +8,21 @@ tệp này cho chương kiến trúc của báo cáo và để trả lời vấn
 **Luật cập nhật**: thêm hay bỏ một công nghệ, một hàng đợi, một service → thêm hay sửa một dòng ở
 §3 hoặc §4 kèm lý do, trong cùng PR.
 
+## Tóm tắt một phút
+
+- **Bài toán**: chi tiền theo mốc bằng tay thì chậm, sai, chi trùng, không giải thích được. Tải nhỏ,
+  nên **không** tách vì hiệu năng (§1).
+- **Tách vì**: rủi ro khác nhau từng phần; ký và xác minh, ngân hàng là các phụ thuộc ngoài chậm và hay
+  lỗi; engine phải thay và mở rộng được; nhất quán chỉ cần trong từng vùng; ranh giới trùng trách nhiệm
+  và quyền (§1, §2.1–2.1c).
+- **Bằng chứng**: mỗi service khác các service khác ở ≥ 3/6 tiêu chí; 47% thay đổi trong lịch sử mã nằm
+  gọn một vùng; một thay đổi nghiệp vụ chỉ chạm một service; hỏng một chỗ không kéo cả hệ; so 4 phương án
+  theo số lời gọi chéo (§2.2–2.6). Ranh giới yếu (contract) nói thẳng kèm cách giảm (§2.5).
+- **Đồng bộ** khi người dùng cần kết quả ngay, có timeout và PENDING; **hàng đợi** ở năm chỗ có lý do;
+  đường đọc không gọi chéo (§3, §6).
+- **Mỗi công nghệ** có cột "giải quyết gì / không có thì sao / vì sao chọn" (§4); những gì cố ý không làm
+  và vì sao (§9).
+
 ## 1. Bài toán thật và tải thật
 
 Hợp đồng dịch vụ, phần mềm, thi công trả tiền theo **mốc**. Mỗi lần chi một mốc, ngày nay kế toán và
@@ -293,6 +308,12 @@ nhất) chỉ đi web → gateway → **một** service, vì mỗi service có �
 | **Nhật ký chuỗi băm** | Kiểm toán biết có ai sửa hay xoá lịch sử không | Người có quyền DB sửa lại "ai duyệt, lúc nào" mà không ai biết | Mỗi mục chứa băm của mục trước; `GET /audit/verify` tính lại. Blockchain thật là thừa: không có nhiều bên không tin nhau cùng ghi |
 | **Engine sau hợp đồng API** (decision) | Luật thanh toán đổi nhiều nhất; engine thay được mà không đụng ai | Engine gắn vào execution: đổi engine là sửa, kiểm, triển khai lại execution; không chạy bóng được | Hợp đồng API: gói dữ kiện của mốc vào, quyết định và vết luật ra. Engine nào đáp ứng hợp đồng đó và qua bộ kiểm hồi quy thì dùng được; thay thì chạy bóng, so kết quả rồi mới bật |
 | **Xác minh chữ ký và chứng từ** (signing) | Chữ ký đúng tại thời điểm ký, bằng chứng dài hạn, hoá đơn có thật | Chấp nhận chứng từ chữ ký giả; mất bằng chứng khi chứng thư hết hạn | Một năng lực dùng cho hợp đồng, chứng từ, trang khách; adapter từng nhà cung cấp; bất đồng bộ khi bên ngoài chậm |
+| **NestJS** cho các service TypeScript | Mọi service cùng một khung: module, DI, guard (kiểm token, quyền), pipe (DTO), interceptor, filter (lỗi) | Mỗi service tự dựng Express theo một kiểu; kiểm quyền, kiểm đầu vào, định dạng lỗi lệch nhau | Chassis dùng chung dựa đúng trên các điểm nối đó (`MODULES.md`); Express/Fastify thuần nhẹ hơn nhưng phải tự dựng lại cùng cấu trúc |
+| **PostgreSQL**, bản ghi JSONB theo collection | Giao dịch: ghi dữ liệu và mục nhật ký chuỗi băm (outbox) **cùng một giao dịch**; khoá lạc quan theo `version`; một loại database cho mọi service | Ghi dữ liệu xong mà mục nhật ký hay sự kiện mất (dual write); mỗi service một loại database phải vận hành | Collection JSONB khớp với định nghĩa tài nguyên ở `resources.json` và CRUD chung, đổi trường không cần migration; đổi lại không có khoá ngoại giữa collection (lọc trong service, đủ ở tải này). Khi một bảng lớn lên hay cần truy vấn phức tạp, chuyển collection đó sang bảng quan hệ trong cùng database của service |
+| **Hợp đồng API viết trước** (`openapi.yaml`) | Web, service gọi đến và Postman làm cùng lúc dựa trên một bản mô tả; người dùng hợp đồng duyệt trước khi có mã | Làm xong mới ghép thì lệch tên trường, mã lỗi; phải chờ nhau | OpenAPI 3.1: sinh được giả lập (MSW), tài liệu (Swagger), kiểm request; chuẩn phổ biến nhất cho REST |
+| **Cấu hình qua biến môi trường** (`.env.example`, `<TÊN>_URL`, khoá ký qua `JWT_PRIVATE_KEY`) | Cùng một image chạy ở dev, CI, demo, máy chủ; bí mật không nằm trong mã | Sửa mã để đổi địa chỉ; bí mật lọt vào git | Cách làm "12-factor"; khoá ký đổi được nhờ `kid` trong JWKS, không phải dừng hệ |
+| **Kiểm thử nhiều tầng** | Mỗi tầng bắt một loại lỗi: test hàm và service (luật nghiệp vụ), test HTTP chạy service thật (DTO, mã lỗi, cookie), Newman qua gateway (ghép service), Vitest + MSW (web) | Chỉ test hàm thì ghép mới vỡ; chỉ test tay thì không lặp lại được | `node:test` không thêm phụ thuộc cho backend; Vitest + Testing Library là chuẩn của React; Newman chạy đúng bộ Postman trong CI |
+| **React + Vite (SPA)** | Ứng dụng nghiệp vụ sau đăng nhập: không cần SEO, không cần dựng trang ở máy chủ; build ra tệp tĩnh đặt sau gateway | Next.js thêm một máy chủ Node cho web và một lớp định tuyến thứ hai cạnh gateway, không giải quyết vấn đề nào ở đây | Vite build nhanh, cấu hình ít; route lazy chia nhỏ bundle |
 | **Docker + `docker compose`** | Mọi môi trường (máy dev, CI, máy demo, máy chủ) chạy cùng một bộ container, cùng phiên bản, bằng một lệnh | "Máy em chạy được": thiếu Postgres, sai phiên bản Node, quên biến môi trường | Kubernetes giải quyết nhiều máy, tự co giãn, cập nhật cuốn chiếu: chưa có nhu cầu đó ở tải này (§1); compose đủ, chuyển lên Kubernetes sau không phải sửa service |
 | **Request id xuyên service** | Lần một lỗi qua gateway → signing → contract bằng một mã | Ba service ba log, không biết dòng nào thuộc request nào | Header `x-request-id`, đã có sẵn. Grafana/Loki chỉ làm nếu dư thời gian |
 | **k6** | Đo được hệ chịu lỗi tới đâu: tỷ lệ lỗi, p95, số giao dịch treo, số giao dịch trùng, trước và sau khi bật timeout, PENDING, circuit breaker | Không biết cơ chế có tác dụng thật không, chỉ có "thấy nó chạy" | Viết kịch bản bằng JavaScript, chạy trong container, cùng tải cho mọi lần đo |
@@ -505,6 +526,7 @@ từ chối = giá trị hợp đồng) → nhà cung cấp xác nhận → hợ
 | Blockchain thật | Không có nhiều tổ chức không tin nhau cùng ghi; chuỗi băm + neo Merkle đạt mục đích kiểm toán |
 | Circuit breaker ở mọi lời gọi nội bộ | Tải nội bộ thấp; chỉ đặt ở ngân hàng và nhà cung cấp ký |
 | Cache (Redis) | Đường đọc một service, dữ liệu nhỏ; chưa có số đo nào cho thấy chậm |
+| Metrics, tracing phân tán (Prometheus, OpenTelemetry), log tập trung (Loki, Grafana) | Ở quy mô 8 tiến trình, `x-request-id` xuyên service + log có cấu trúc + `docker compose logs` đủ lần một lỗi; làm thêm khi có máy chủ chạy thật và cần cảnh báo |
 | GraphQL / BFF | Mỗi màn gọi một service; REST theo tài nguyên đủ, dễ cache, mô tả trọn bằng OpenAPI; GraphQL thêm một lớp truy vấn chưa có ai cần |
 | Event sourcing | Trạng thái hiện tại + nhật ký chuỗi băm đủ để tái dựng "vì sao"; event sourcing tăng độ khó mà không thêm điều gì cần |
 
