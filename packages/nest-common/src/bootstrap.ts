@@ -18,6 +18,7 @@ import { AllExceptionsFilter } from "./filters/all-exceptions.filter";
 import { LoggingInterceptor } from "./interceptors/logging.interceptor";
 import { TransformInterceptor } from "./interceptors/transform.interceptor";
 import { repoRoot } from "./paths";
+import { createValidationPipe } from "./problem";
 import { Repository } from "./repository";
 import { BaseService } from "./services/base.service";
 
@@ -84,6 +85,7 @@ export async function bootstrapService(options: ServiceOptions) {
       );
     },
   );
+  app.useGlobalPipes(createValidationPipe());
   app.useGlobalFilters(new AllExceptionsFilter(app.get(Repository)));
   app.useGlobalInterceptors(
     new LoggingInterceptor(),

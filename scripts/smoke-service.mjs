@@ -39,6 +39,14 @@ try {
   const problem = await resources.json();
   assert.equal(typeof problem.code, "string");
   assert.ok(problem.requestId);
+  // RFC 9457 problem details, with the previous fields kept for older clients.
+  assert.match(
+    resources.headers.get("content-type"),
+    /application\/problem\+json/,
+  );
+  assert.equal(problem.status, 401);
+  assert.equal(problem.traceId, problem.requestId);
+  assert.ok(problem.type && problem.title && problem.detail);
   // A token signed with the shared secret is accepted: the actor comes from its claims. The id
   // is the seeded system administrator, because identity also checks that the account exists.
   const token = signActorToken({
@@ -61,8 +69,26 @@ try {
   });
   assert.equal(forged.status, 401);
   assert.equal((await forged.json()).code, "INVALID_SESSION");
+  // The global ValidationPipe checks the query shape before any handler runs.
+  const auth = { headers: { authorization: `Bearer ${token}` } };
+  const tooMany = await fetch(`${base}/resources/settings?limit=999`, auth);
+  assert.equal(tooMany.status, 400);
+  const tooManyBody = await tooMany.json();
+  assert.deepEqual(tooManyBody.errors, [
+    { field: "limit", code: "INVALID_NUMBER" },
+  ]);
+  const unknown = await fetch(`${base}/resources/settings?bogus=1`, auth);
+  assert.equal(unknown.status, 400);
+  assert.equal((await unknown.json()).errors[0].code, "UNKNOWN_FIELD");
+  const badBulk = await fetch(`${base}/resources/settings/bulk-delete`, {
+    method: "POST",
+    headers: { ...auth.headers, "content-type": "application/json" },
+    body: JSON.stringify({ ids: [] }),
+  });
+  assert.equal(badBulk.status, 400);
+  assert.equal((await badBulk.json()).errors[0].field, "ids");
   console.log(
-    "service smoke passed: health, auth required, token accepted, forged token refused",
+    "service smoke passed: health, auth required, token accepted, forged token refused, problem+json, DTO validation",
   );
 } finally {
   child.kill();

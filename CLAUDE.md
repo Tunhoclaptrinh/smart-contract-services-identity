@@ -37,6 +37,7 @@ Từ thư mục gốc repo này, mã cũ ở **`../codecash`**. Không có thì 
 | Tệp cũ nào chuyển sang service nào | `docs/DOI_CHIEU_CODECASH.md` |
 | Ai làm gì, ngày nào, prompt mẫu | `docs/KICH_BAN_VIBE_CODE.md` |
 | Quy trình nhánh, cấu trúc repo | `docs/QUY_TRINH_NHANH.md`, `docs/KIEN_TRUC_REPO.md` |
+| Chassis có gì, CRUD chung (lọc, nhập, xuất), định dạng lỗi | `packages/nest-common/MODULES.md` (đọc thay vì mở mã chassis) |
 
 Mã cũ và tài liệu cũ mâu thuẫn nhau thì `NGHIEP_VU.md` thắng; ghi chỗ mâu thuẫn vào
 `service/SERVICE.md` (mục "Rà soát").
@@ -81,7 +82,10 @@ cần gì và vì sao; việc đó làm ở repo cha theo `core/<việc>` → `b
 - Định danh, chú thích tiếng Anh; tài liệu nhóm tiếng Việt.
 - Tiền: không dùng số thực. Số tiền là chuỗi thập phân hoặc số nguyên đơn vị nhỏ nhất, như CodeCash.
 - Lỗi nghiệp vụ: ném exception của Nest với mã `UPPER_SNAKE_CASE` (`ConflictException("NOT_YOUR_TURN")`);
-  bộ lọc chung trả `{ code, message, requestId }`.
+  bộ lọc chung trả RFC 9457 `application/problem+json`: `{ type, title, status, detail, code, traceId,
+  errors?, statusCode, message, requestId }`. Nhiều lỗi theo trường: `throw new ValidationProblem([...])`.
+- Đầu vào endpoint riêng: viết DTO bằng `class-validator` (pipe toàn cục đã bật whitelist,
+  forbidNonWhitelisted, transform); không nhận `@Body() body: any` ở endpoint mới.
 - Quyền: khai báo trong `packages/contracts/permissions.json`, gắn bằng `@RequirePermission("<resource>:<action>")`;
   route công khai dùng `@Public()`.
 - Nhật ký kiểm toán: chỉ ghi qua `Repository.transact` (chuỗi băm), không sửa, không xoá mục cũ.

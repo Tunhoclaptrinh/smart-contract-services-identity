@@ -33,6 +33,15 @@ export interface Field {
   integer?: boolean;
   maxLength?: number;
   pattern?: string;
+  /** Column title shown by the web, in exports (`header=label`) and in import templates. */
+  label?: string;
+  /** Short help for the import template and forms (expected format, example). */
+  description?: string;
+  /** No two records may share a non-empty value (checked on create, update and import). */
+  unique?: boolean;
+  /** Set false to keep a field out of filters / sorting (large text, secrets). */
+  filterable?: boolean;
+  sortable?: boolean;
 }
 export interface Resource {
   name: string;

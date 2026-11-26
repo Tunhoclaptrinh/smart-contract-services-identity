@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   NotFoundException,
   ConflictException,
+  PayloadTooLargeException,
 } from "@nestjs/common";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -12,8 +13,14 @@ import { resolve } from "node:path";
 import bcrypt from "bcryptjs";
 import { Repository } from "../repository";
 import { parsePage } from "../dto/pagination.dto";
-import { parseFilters } from "../utils/query-builder";
-import { toCsv } from "../utils/csv";
+import {
+  compareCells,
+  meets,
+  operatorsFor,
+  parseFilterConditions,
+} from "../utils/query-builder";
+import { stampedName, toCsv } from "../utils/csv";
+import { toXlsx } from "../utils/xlsx";
 import { can, scopeOf } from "../permissions";
 import type { Actor, Field, Resource, RecordEntity } from "../types";
 import { repoRoot } from "../paths";
@@ -21,10 +28,35 @@ import { fold } from "../listing";
 import { INTERNAL_ROLES, orgAdminRefusal } from "../roles";
 import { auditDigest } from "../audit-chain";
 import { fieldProblem, normalizeField } from "../field-validation";
+import { ValidationProblem, toFieldIssue } from "../problem";
+import { parseCsv } from "../utils/csv-parse";
+import { IMPORT_MODES, MAX_BATCH, type ImportMode } from "../dto/resource.dto";
 
 /** Each operation maps to `<resource>:<operation>` in packages/contracts/permissions.json. */
 type Operation = "read" | "create" | "update" | "delete" | "import" | "export";
-const MAX_BATCH = 500;
+
+/** A CSV cell as the field's type; text that is not a valid value stays text and fails validation. */
+function readCell(field: Field, cell: string): unknown {
+  if (field.type === "number") {
+    const n = Number(cell.replace(/\s/g, ""));
+    return Number.isFinite(n) ? n : cell;
+  }
+  if (field.type === "boolean") {
+    const v = fold(cell);
+    if (["true", "1", "yes", "co", "x"].includes(v)) return true;
+    if (["false", "0", "no", "khong"].includes(v)) return false;
+  }
+  return cell;
+}
+
+/** Most rows one export returns; filter further for more. */
+export const MAX_EXPORT = 10_000;
+const SYSTEM_LABELS: Record<string, string> = {
+  id: "ID",
+  origin: "Nguồn",
+  createdAt: "Tạo lúc",
+  updatedAt: "Sửa lúc",
+};
 
 @Injectable()
 export class BaseService {
@@ -126,7 +158,7 @@ export class BaseService {
   }
   private validate(def: Resource, body: unknown, partial = false) {
     const { errors, data } = this.fieldErrors(def, body, partial);
-    if (errors.length) throw new BadRequestException(errors[0]);
+    if (errors.length) throw new ValidationProblem(errors);
     return data;
   }
   /** Ids referenced by `ref` fields that do not exist in the target resource. */
@@ -150,15 +182,87 @@ export class BaseService {
   }
   private async checkReferences(def: Resource, data: Record<string, unknown>) {
     const errors = await this.referenceErrors(def, data);
-    if (errors.length) throw new BadRequestException(errors[0]);
+    if (errors.length) throw new ValidationProblem(errors);
+  }
+  /** Fields declared `unique` in resources.json; resources that declare none keep code/email. */
+  private uniqueKeys(def: Resource) {
+    const declared = def.fields.filter((f) => f.unique).map((f) => f.key);
+    return declared.length
+      ? declared
+      : ["code", "email"].filter((k) => def.fields.some((f) => f.key === k));
   }
   private duplicate(
+    def: Resource,
     a: Record<string, unknown>,
     b: Record<string, unknown>,
   ): boolean {
-    return Boolean(
-      (a.code && b.code === a.code) || (a.email && b.email === a.email),
+    return this.uniqueKeys(def).some(
+      (k) =>
+        a[k] !== undefined && a[k] !== null && a[k] !== "" && b[k] === a[k],
     );
+  }
+  /** Columns a list can filter and sort on: system columns plus the declared fields. */
+  private columnTypes(def: Resource, use: "filter" | "sort") {
+    const types: Record<string, string> = {
+      id: "string",
+      createdAt: "datetime",
+      updatedAt: "datetime",
+    };
+    for (const f of def.fields)
+      if ((use === "filter" ? f.filterable : f.sortable) !== false)
+        types[f.key] = f.ref ? "ref" : f.type;
+    return types;
+  }
+  /** id → name of every record of the resources `def` points to. */
+  private async referenceNames(def: Resource, keys?: string[]) {
+    const names = new Map<string, Map<string, string>>();
+    for (const f of def.fields)
+      if (f.ref && !names.has(f.ref) && (!keys || keys.includes(f.key)))
+        names.set(
+          f.ref,
+          new Map(
+            (await this.repo.list(f.ref)).map((r) => [
+              r.id,
+              String(r.name ?? r.displayName ?? r.code ?? ""),
+            ]),
+          ),
+        );
+    return names;
+  }
+  /**
+   * Column descriptions for the web's table, filter bar and import mapping: type, label, which
+   * operators apply, options of a select, target of a reference.
+   */
+  async columns(name: string, actor: Actor) {
+    const def = this.access(name, actor, "read");
+    const filterable = this.columnTypes(def, "filter");
+    const sortable = this.columnTypes(def, "sort");
+    const describe = (
+      key: string,
+      type: string,
+      extra: Partial<Field> = {},
+    ) => ({
+      key,
+      label: extra.label ?? key,
+      type: extra.ref ? "ref" : type,
+      required: Boolean(extra.required),
+      sortable: key in sortable,
+      filterable: key in filterable,
+      operators:
+        key in filterable ? operatorsFor(extra.ref ? "ref" : type) : [],
+      facet: Boolean(extra.ref) || ["select", "boolean"].includes(type),
+      ...(extra.options ? { options: extra.options } : {}),
+      ...(extra.ref ? { ref: extra.ref } : {}),
+      ...(extra.unique ? { unique: true } : {}),
+      ...(extra.description ? { description: extra.description } : {}),
+      system: !def.fields.some((f) => f.key === key),
+    });
+    return [
+      describe("id", "string", { label: "ID" }),
+      ...def.fields.map((f) => describe(f.key, f.type, f)),
+      describe("createdAt", "datetime", { label: "Tạo lúc" }),
+      describe("updatedAt", "datetime", { label: "Sửa lúc" }),
+    ];
   }
   /** Scoped, filtered, searched and sorted records; `list` pages them and `export` takes all. */
   private async query(
@@ -166,40 +270,25 @@ export class BaseService {
     query: Record<string, unknown>,
     actor: Actor,
   ) {
-    const allowed = [
-      "id",
-      "createdAt",
-      "updatedAt",
-      ...def.fields.map((f) => f.key),
-    ];
-    const filters = parseFilters(query.filters, allowed);
+    const conditions = parseFilterConditions(
+      query.filters,
+      this.columnTypes(def, "filter"),
+    );
     const sort = String(query.sortBy ?? "createdAt");
-    if (!allowed.includes(sort)) throw new BadRequestException("INVALID_SORT");
+    if (!(sort in this.columnTypes(def, "sort")))
+      throw new BadRequestException("INVALID_SORT");
     if (query.sortOrder && !["asc", "desc"].includes(String(query.sortOrder)))
       throw new BadRequestException("INVALID_SORT");
-    let items = (await this.repo.list(def.name)).filter((x) =>
+    const scope = (await this.repo.list(def.name)).filter((x) =>
       this.visible(def.name, x, actor),
     );
-    items = items.filter((x) =>
-      Object.entries(filters).every(([k, values]) =>
-        (values as unknown[]).includes(x[k]),
-      ),
+    let items = scope.filter((x) =>
+      conditions.every((c) => meets(x[c.field], c, fold)),
     );
+    const names = await this.referenceNames(def);
     if (query.search) {
       // Every word must appear, accents and case ignored; a reference also matches by its name.
       const words = fold(String(query.search)).split(/\s+/).filter(Boolean);
-      const names = new Map<string, Map<string, string>>();
-      for (const f of def.fields)
-        if (f.ref && !names.has(f.ref))
-          names.set(
-            f.ref,
-            new Map(
-              (await this.repo.list(f.ref)).map((r) => [
-                r.id,
-                String(r.name ?? ""),
-              ]),
-            ),
-          );
       items = items.filter((x) => {
         const text = fold(
           def.fields
@@ -214,23 +303,67 @@ export class BaseService {
         return words.every((word) => text.includes(word));
       });
     }
-    items.sort((a, b) => {
-      const x = a[sort],
-        y = b[sort];
-      const cmp =
-        typeof x === "number" && typeof y === "number"
-          ? x - y
-          : String(x ?? "").localeCompare(String(y ?? ""));
-      return (
-        (query.sortOrder === "asc" ? 1 : -1) * cmp || a.id.localeCompare(b.id)
-      );
-    });
-    return items;
+    // A reference sorts by the name people see, not by its id; empty values go last.
+    const ref = def.fields.find((f) => f.key === sort)?.ref;
+    const key = (x: RecordEntity) =>
+      ref ? (names.get(ref)?.get(String(x[sort])) ?? x[sort]) : x[sort];
+    const direction = query.sortOrder === "asc" ? 1 : -1;
+    items.sort(
+      (a, b) =>
+        direction * compareCells(key(a), key(b)) || a.id.localeCompare(b.id),
+    );
+    return { items, scope };
   }
-  async list(name: string, query: Record<string, unknown>, actor: Actor) {
+  /** `columns=a,b`: the record fields to return (id and version always come along). */
+  private projection(def: Resource, raw: unknown) {
+    if (raw === undefined || raw === "") return null;
+    const requested = String(raw)
+      .split(",")
+      .map((c) => c.trim())
+      .filter(Boolean);
+    const available = [
+      "id",
+      "version",
+      "createdAt",
+      "updatedAt",
+      "origin",
+      ...def.fields.map((f) => f.key),
+    ];
+    if (!requested.length || requested.some((c) => !available.includes(c)))
+      throw new BadRequestException("INVALID_COLUMN");
+    return new Set(["id", "version", ...requested]);
+  }
+  /** `facets=kind,active`: distinct values with counts over the caller's whole scope. */
+  private facets(def: Resource, raw: unknown, scope: RecordEntity[]) {
+    if (raw === undefined || raw === "") return undefined;
+    const keys = String(raw)
+      .split(",")
+      .map((c) => c.trim())
+      .filter(Boolean);
+    const out: Record<string, { value: string; count: number }[]> = {};
+    for (const key of keys) {
+      const field = def.fields.find((f) => f.key === key);
+      if (!field || !(field.ref || ["select", "boolean"].includes(field.type)))
+        throw new BadRequestException("INVALID_FACET");
+      const counts = new Map<string, number>();
+      for (const row of scope) {
+        const value = row[key];
+        if (value === undefined || value === null || value === "") continue;
+        counts.set(String(value), (counts.get(String(value)) ?? 0) + 1);
+      }
+      out[key] = [...counts]
+        .map(([value, count]) => ({ value, count }))
+        .sort((a, b) => compareCells(a.value, b.value));
+    }
+    return out;
+  }
+  async list(name: string, raw: object, actor: Actor) {
+    const query = raw as Record<string, unknown>;
     const def = this.access(name, actor, "read");
     const { page: asked, limit } = parsePage(query);
-    const items = await this.query(def, query, actor);
+    const pick = this.projection(def, query.columns);
+    const { items, scope } = await this.query(def, query, actor);
+    const facets = this.facets(def, query.facets, scope);
     // A page past the end (rows removed meanwhile) is answered with the last page, as the
     // workflow lists do; the client follows the page it was served.
     const totalPages = Math.max(1, Math.ceil(items.length / limit));
@@ -238,11 +371,18 @@ export class BaseService {
     return {
       items: items
         .slice((page - 1) * limit, page * limit)
-        .map((x) => this.shown(name, x, actor)),
+        .map((x) => this.shown(name, x, actor))
+        .map((x) =>
+          pick
+            ? Object.fromEntries(Object.entries(x).filter(([k]) => pick.has(k)))
+            : x,
+        ),
       total: items.length,
       page,
       limit,
       totalPages,
+      scopeTotal: scope.length,
+      ...(facets ? { facets } : {}),
     };
   }
   async get(name: string, id: string, actor: Actor) {
@@ -283,7 +423,7 @@ export class BaseService {
     await this.repo.mutate(
       name,
       (items) => {
-        if (items.some((x) => this.duplicate(data, x)))
+        if (items.some((x) => this.duplicate(def, data, x)))
           throw new ConflictException("DUPLICATE_RECORD");
         items.push(item);
       },
@@ -320,7 +460,7 @@ export class BaseService {
         this.assertUnmanaged(def, items[i]);
         if (items[i].version !== expected)
           throw new ConflictException("VERSION_CONFLICT");
-        if (items.some((x) => x.id !== id && this.duplicate(data, x)))
+        if (items.some((x) => x.id !== id && this.duplicate(def, data, x)))
           throw new ConflictException("DUPLICATE_RECORD");
         updated = {
           ...items[i],
@@ -357,11 +497,118 @@ export class BaseService {
     );
     return { deleted: true };
   }
-  private importRows(body: unknown): unknown[] {
-    const rows = (body as { items?: unknown })?.items;
+  /**
+   * Rows of an import, from JSON `items` or a CSV text. CSV headers match a field key or label (or
+   * go through `mapping`); CSV cells are text, so they are read as the field's type here.
+   */
+  private importInput(def: Resource, body: unknown) {
+    const input = (body ?? {}) as {
+      items?: unknown;
+      csv?: unknown;
+      mapping?: unknown;
+      mode?: unknown;
+      key?: unknown;
+    };
+    const mode = (input.mode ?? "all-or-nothing") as ImportMode;
+    if (!(IMPORT_MODES as readonly string[]).includes(mode))
+      throw new BadRequestException("INVALID_IMPORT_MODE");
+    let rows: unknown[];
+    if (typeof input.csv === "string") {
+      if (input.items !== undefined)
+        throw new BadRequestException("INVALID_IMPORT");
+      let table: string[][];
+      try {
+        table = parseCsv(input.csv);
+      } catch {
+        throw new BadRequestException("INVALID_CSV");
+      }
+      const [headers = [], ...lines] = table;
+      const mapping =
+        input.mapping && typeof input.mapping === "object"
+          ? (input.mapping as Record<string, unknown>)
+          : {};
+      const keys = headers.map((raw) => {
+        const header = raw.trim();
+        const mapped = mapping[header];
+        const field = def.fields.find(
+          (f) =>
+            f.key === (typeof mapped === "string" ? mapped : header) ||
+            (mapped === undefined &&
+              f.label !== undefined &&
+              fold(f.label) === fold(header)),
+        );
+        // `id`, `createdAt`… of an exported file are ignored rather than refused.
+        if (
+          !field &&
+          !["id", "version", "createdAt", "updatedAt", "origin"].includes(
+            header,
+          ) &&
+          !header.endsWith("_name")
+        )
+          throw new ValidationProblem([`UNKNOWN_COLUMN:${header}`]);
+        return field;
+      });
+      rows = lines.map((cells) =>
+        Object.fromEntries(
+          keys.flatMap((field, i) => {
+            const cell = (cells[i] ?? "").trim();
+            if (!field || cell === "") return [];
+            return [[field.key, readCell(field, cell)]];
+          }),
+        ),
+      );
+    } else rows = input.items as unknown[];
     if (!Array.isArray(rows) || !rows.length || rows.length > MAX_BATCH)
       throw new BadRequestException("INVALID_IMPORT");
-    return rows;
+    const key = mode === "upsert" ? String(input.key ?? "") : undefined;
+    if (key !== undefined && !this.uniqueKeys(def).includes(key))
+      throw new BadRequestException("INVALID_IMPORT_KEY");
+    return { rows, mode, key };
+  }
+  /**
+   * Checks every row the way the import will write it: field rules, references, unique values
+   * against the stored records and the rows above it, and (upsert) the record a row updates.
+   */
+  private async planImport(def: Resource, body: unknown, actor: Actor) {
+    const { rows, mode, key } = this.importInput(def, body);
+    const existing = await this.repo.list(def.name);
+    const cache = new Map<string, Set<string>>();
+    const accepted: Record<string, unknown>[] = [];
+    const results = [];
+    for (const [index, row] of rows.entries()) {
+      const field = key ? def.fields.find((f) => f.key === key) : undefined;
+      const wanted =
+        field && row && typeof row === "object"
+          ? normalizeField(field, (row as Record<string, unknown>)[field.key])
+          : undefined;
+      const target =
+        key && wanted !== undefined && wanted !== ""
+          ? existing.find((x) => x[key] === wanted)
+          : undefined;
+      const { errors, data } = this.fieldErrors(def, row, Boolean(target));
+      errors.push(...(await this.referenceErrors(def, data, cache)));
+      if (target && !this.visible(def.name, target, actor))
+        errors.push("RECORD_NOT_FOUND");
+      else if (target && def.managedOrigins?.includes(String(target.origin)))
+        errors.push("MANAGED_RECORD");
+      if (
+        [...existing.filter((x) => x.id !== target?.id), ...accepted].some(
+          (other) => this.duplicate(def, data, other),
+        )
+      )
+        errors.push("DUPLICATE_RECORD");
+      if (!errors.length) accepted.push(data);
+      results.push({
+        row: index + 1,
+        data: row,
+        status: errors.length ? ("invalid" as const) : ("valid" as const),
+        action: target ? ("update" as const) : ("create" as const),
+        ...(target ? { targetId: target.id } : {}),
+        errors,
+        values: data,
+      });
+    }
+    return { mode, results };
   }
   /**
    * Dry run of an import: one result per row with every problem found, so the user can fix the
@@ -369,62 +616,92 @@ export class BaseService {
    */
   async validateImport(name: string, body: unknown, actor: Actor) {
     const def = this.access(name, actor, "import");
-    const rows = this.importRows(body);
-    const existing = await this.repo.list(name);
-    const cache = new Map<string, Set<string>>();
-    const accepted: Record<string, unknown>[] = [];
-    const results = [];
-    for (const [index, row] of rows.entries()) {
-      const { errors, data } = this.fieldErrors(def, row);
-      errors.push(...(await this.referenceErrors(def, data, cache)));
-      if (
-        [...existing, ...accepted].some((other) => this.duplicate(data, other))
-      )
-        errors.push("DUPLICATE_RECORD");
-      if (!errors.length) accepted.push(data);
-      results.push({
-        row: index + 1,
-        data: row,
-        status: errors.length ? "invalid" : "valid",
-        errors,
-      });
-    }
-    const valid = results.filter((r) => r.status === "valid").length;
+    const { results } = await this.planImport(def, body, actor);
+    const valid = results.filter((r) => r.status === "valid");
     return {
-      summary: { total: rows.length, valid, error: rows.length - valid },
-      results,
+      summary: {
+        total: results.length,
+        valid: valid.length,
+        error: results.length - valid.length,
+      },
+      plan: {
+        create: valid.filter((r) => r.action === "create").length,
+        update: valid.filter((r) => r.action === "update").length,
+      },
+      results: results.map(({ values: _values, ...r }) => r),
     };
   }
-  /** All-or-nothing: one invalid row rejects the whole file. */
+  /**
+   * `all-or-nothing` (default) and `upsert`: one invalid row rejects the file, with every problem
+   * and its row. `skip-invalid`: valid rows are written, the others come back in `errors`.
+   */
   async import(name: string, body: unknown, actor: Actor) {
     const def = this.access(name, actor, "import");
-    const rows = this.importRows(body);
-    const cache = new Map<string, Set<string>>();
-    const prepared: RecordEntity[] = [];
-    for (const value of rows) {
-      const data = this.validate(def, value);
-      const references = await this.referenceErrors(def, data, cache);
-      if (references.length) throw new BadRequestException(references[0]);
-      prepared.push(await this.newRecord(name, data, actor));
-    }
+    const { mode, results } = await this.planImport(def, body, actor);
+    const invalid = results.filter((r) => r.status === "invalid");
+    const issues = invalid.flatMap((r) =>
+      r.errors.map((e) => toFieldIssue(e, r.row)),
+    );
+    if (invalid.length && mode !== "skip-invalid")
+      throw new ValidationProblem(issues, invalid[0].errors[0]);
+    const valid = results.filter((r) => r.status === "valid");
+    if (!valid.length)
+      throw new ValidationProblem(issues, invalid[0]?.errors[0]);
+    const created: RecordEntity[] = [];
+    for (const r of valid.filter((r) => r.action === "create"))
+      created.push(await this.newRecord(name, r.values, actor));
+    const updates = valid.filter((r) => r.action === "update");
     await this.repo.mutate(
       name,
       (items) => {
-        const all = [...items];
-        for (const item of prepared) {
-          if (all.some((x) => this.duplicate(item, x)))
-            throw new ConflictException("DUPLICATE_RECORD");
-          all.push(item);
+        // Checked again inside the write: another request may have changed the table meanwhile.
+        const now = new Date().toISOString();
+        for (const r of updates) {
+          const i = items.findIndex((x) => x.id === r.targetId);
+          if (i < 0) throw new NotFoundException("RECORD_NOT_FOUND");
+          this.assertUnmanaged(def, items[i]);
+          items[i] = {
+            ...items[i],
+            ...r.values,
+            version: items[i].version + 1,
+            updatedAt: now,
+          };
         }
-        items.push(...prepared);
+        for (const item of created) {
+          if (items.some((x) => this.duplicate(def, item, x)))
+            throw new ConflictException("DUPLICATE_RECORD");
+          items.push(item);
+        }
+        for (const r of updates)
+          if (
+            items.some(
+              (x) => x.id !== r.targetId && this.duplicate(def, r.values, x),
+            )
+          )
+            throw new ConflictException("DUPLICATE_RECORD");
       },
-      this.auditRecord("IMPORT", name, String(prepared.length), actor),
+      this.auditRecord(
+        "IMPORT",
+        name,
+        `created=${created.length};updated=${updates.length};skipped=${invalid.length}`,
+        actor,
+      ),
     );
-    return { created: prepared.length };
+    return {
+      created: created.length,
+      updated: updates.length,
+      skipped: invalid.length,
+      ...(invalid.length ? { errors: issues } : {}),
+    };
   }
-  /** Header row plus one sample row, in the column order the import expects. */
-  async template(name: string, actor: Actor) {
+  /**
+   * Header row plus one sample row, in the column order the import expects. `header=label` writes
+   * the labels (the import reads both).
+   */
+  async template(name: string, actor: Actor, header: unknown = "key") {
     const def = this.access(name, actor, "import");
+    if (!["key", "label"].includes(String(header)))
+      throw new BadRequestException("INVALID_HEADER");
     const sample: Record<string, unknown> = {};
     for (const f of def.fields) {
       const ref = f.ref ? (await this.repo.list(f.ref))[0]?.id : undefined;
@@ -435,28 +712,37 @@ export class BaseService {
           : f.type === "boolean"
             ? true
             : f.type === "number"
-              ? 1
+              ? (f.min ?? 1)
               : f.type === "email"
                 ? "name@example.com"
                 : "");
     }
-    return toCsv(
+    const csv = toCsv(
       def.fields.map((f) => f.key),
       [sample],
     );
+    if (header !== "label") return csv;
+    const labels = toCsv(
+      def.fields.map((f) => f.label ?? f.key),
+      [],
+    );
+    return labels + csv.slice(csv.indexOf("\r\n") + 2);
   }
   /**
    * Server-side export of the whole filtered result (Base import-export). Reference fields get a
-   * `<field>_name` column with the referenced record's name.
+   * `<field>_name` column with the referenced record's name. `header=label` titles the columns with
+   * their labels; more than MAX_EXPORT rows is refused so one request cannot pin the server.
    */
-  async export(name: string, query: Record<string, unknown>, actor: Actor) {
+  async export(name: string, raw: object, actor: Actor) {
+    const query = raw as Record<string, unknown>;
     const def = this.access(name, actor, "export");
     const format = String(query.format ?? "csv");
-    if (!["csv", "json"].includes(format))
+    if (!["csv", "json", "xlsx"].includes(format))
       throw new BadRequestException("INVALID_FORMAT");
-    let items = (await this.query(def, query, actor)).map((x) =>
-      this.shown(name, x, actor),
-    );
+    const header = String(query.header ?? "key");
+    if (!["key", "label"].includes(header))
+      throw new BadRequestException("INVALID_HEADER");
+    let items = (await this.query(def, query, actor)).items;
     if (query.limit !== undefined) {
       const limit = Number(query.limit);
       const page = Number(query.page ?? 1);
@@ -469,6 +755,9 @@ export class BaseService {
         throw new BadRequestException("INVALID_PAGINATION");
       items = items.slice((page - 1) * limit, page * limit);
     }
+    if (items.length > MAX_EXPORT)
+      throw new PayloadTooLargeException("EXPORT_TOO_LARGE");
+    const shown = items.map((x) => this.shown(name, x, actor));
     const available = [
       "id",
       ...def.fields.map((f) => f.key),
@@ -477,26 +766,22 @@ export class BaseService {
       "updatedAt",
     ];
     const requested = query.columns
-      ? String(query.columns).split(",").filter(Boolean)
+      ? String(query.columns)
+          .split(",")
+          .map((c) => c.trim())
+          .filter(Boolean)
       : def.fields.map((f) => f.key);
-    if (requested.some((column) => !available.includes(column)))
+    if (
+      !requested.length ||
+      requested.some((column) => !available.includes(column))
+    )
       throw new BadRequestException("INVALID_COLUMN");
-    const names = new Map<string, Map<string, string>>();
-    for (const f of def.fields.filter(
-      (f) => f.ref && requested.includes(f.key),
-    ))
-      if (!names.has(f.ref!))
-        names.set(
-          f.ref!,
-          new Map(
-            (await this.repo.list(f.ref!)).map((r) => [r.id, String(r.name)]),
-          ),
-        );
+    const names = await this.referenceNames(def, requested);
     const columns = requested.flatMap((column) => {
       const field = def.fields.find((f) => f.key === column);
       return field?.ref ? [column, `${column}_name`] : [column];
     });
-    const rows = items.map((item) =>
+    const rows = shown.map((item) =>
       Object.fromEntries(
         columns.map((column) => {
           if (column.endsWith("_name")) {
@@ -512,10 +797,36 @@ export class BaseService {
         }),
       ),
     );
+    const titles = columns.map((column) => {
+      if (header === "key") return column;
+      const base = column.endsWith("_name") ? column.slice(0, -5) : column;
+      const field = def.fields.find((f) => f.key === base);
+      const label = field?.label ?? SYSTEM_LABELS[base] ?? base;
+      return column === base ? label : `${label} (tên)`;
+    });
     await this.audit("EXPORT", name, String(rows.length), actor);
-    return format === "json"
-      ? { contentType: "application/json", body: JSON.stringify(rows, null, 2) }
-      : { contentType: "text/csv; charset=utf-8", body: toCsv(columns, rows) };
+    const fileName = stampedName(name);
+    if (format === "json")
+      return {
+        contentType: "application/json",
+        fileName: `${fileName}.json`,
+        body: JSON.stringify(rows, null, 2),
+      };
+    if (format === "xlsx")
+      return {
+        contentType:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        fileName: `${fileName}.xlsx`,
+        body: await toXlsx(name, titles, columns, rows),
+      };
+    const csvRows = rows.map((row) =>
+      Object.fromEntries(columns.map((c, i) => [titles[i], row[c]])),
+    );
+    return {
+      contentType: "text/csv; charset=utf-8",
+      fileName: `${fileName}.csv`,
+      body: toCsv(titles, csvRows),
+    };
   }
   async bulkDelete(name: string, body: unknown, actor: Actor) {
     const def = this.access(name, actor, "delete");
