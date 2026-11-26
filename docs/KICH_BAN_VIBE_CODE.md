@@ -37,25 +37,50 @@ Trưởng nhóm làm trước, sáng 27/11: tạo repo service cho từng ngư�
 
 ## 3. Chia việc
 
-| Người | Repo service | Màn web (`btl-frontend/src/features/…`) | Saga, thí nghiệm |
-| --- | --- | --- | --- |
-| TV1 (trưởng nhóm) | identity; gateway, `compose.yaml` (repo cha `main`) | `platform` (tổ chức, người dùng, mời thành viên) | — |
-| TV2 | contract | `contracts` (danh sách, wizard soạn, số hoá mốc) | bước 1 của S1 |
-| TV3 | signing (gồm tài liệu) | `signing` (vị trí ký, trình tự, cách ký, xác minh công khai) | S1, phát S2 |
-| TV4 | execution | `milestones` (việc cần làm, chi tiết, chứng từ), `disputes` | S3, nhận S2, F1 |
-| TV5 | decision (Python FastAPI quanh `codecash_engine`), payment | truy vết quyết định, duyệt chi, phiên bản luật | S4, F2 |
-| TV6 | audit (gồm thông báo); `packages/http-client`, outbox/consumer (phần nền) | `audit`, `dashboard`, thông báo | DLQ, k6 |
+Thiết kế chốt (tính năng, quy tắc, API, saga, ma trận yêu cầu hai môn):
+`docs/PHAN_TICH_THIET_KE.md`. Mỗi người sở hữu trọn **một lát dọc**: service + màn web gọi nó +
+test + request Postman + một chương báo cáo; lịch sử commit tự nói ai làm gì, vấn đáp ai cũng có
+phần sâu của mình.
+
+| Người | Repo service | Màn web (`btl-frontend/src/features/…`) | Quy tắc (§4 thiết kế) | Saga, thí nghiệm | Pattern LTWNC trình bày |
+| --- | --- | --- | --- | --- | --- |
+| TV1 (trưởng nhóm) | identity; gateway, `compose.yaml`, chassis (repo cha) | đăng nhập, đăng ký, mời, đổi và quên mật khẩu; `platform` | BR-I01, I02 | — (MS-B2, MS-B4) | Redux slice phiên, `ApiClient` tự làm mới token, Render Props `<Can>`, HOC `withPermission` |
+| TV2 | contract | `contracts`: danh sách, wizard soạn có lưu nháp, số hoá mốc, rà soát, bình luận | BR-A01…A08 | bước 1 của S1 | Compound `<MilestoneBuilder>`, hook `usePersistentDraft<T>`, một schema kiểm cả web và service |
+| TV3 | signing (gồm tài liệu) | `signing`: vị trí ký, trình tự, ký; trang khách xác minh mã băm | BR-A09…A11 | S1, phát S2; F3 | vai trò khách, upload kiểm loại tệp, giao diện đúng lượt |
+| TV4 | execution | `milestones` (việc cần làm, bảng mốc, chi tiết, chứng từ), `disputes`, ngoại lệ | BR-B03, B05, B08, B09, B11, B12 | S3, nhận S2; F1 | bảng ≥ 200 dòng ảo hoá + Profiler trước/sau, `useListQuery<T>`, `useDebouncedValue<T>` |
+| TV5 | decision (Python FastAPI quanh `codecash_engine`), payment | `decisions` (`<DecisionTrace>`, bộ luật, chạy thử), `payments` | BR-B01, B02, B04, B06, B07, B10 | S4; F2 | Compound `<DecisionTrace>`, type guard `isPayableDecision`, tiền chuỗi thập phân |
+| TV6 | audit (gồm thông báo); outbox, consumer, DLQ (phần nền, cùng TV1) | `audit` (nhật ký, kiểm toàn vẹn), `dashboard`, thông báo | — | F4, k6 | Lighthouse trước/sau tách bundle, hạ tầng test web |
 
 Ai sở hữu tệp cũ nào: `docs/DOI_CHIEU_CODECASH.md` (backend), `btl-frontend/docs/DOI_CHIEU_CODECASH.md` (web).
 
+### 3.1. Mỗi người nộp gì ("xong" là thế nào)
+
+| Hạng mục | Tối thiểu | Kiểm ở đâu |
+| --- | --- | --- |
+| `service/openapi.yaml` | ≥ 4 endpoint nghiệp vụ, mỗi endpoint có lỗi 4xx kèm `code`, khớp §6 thiết kế | PR, CI |
+| `service/SERVICE.md` | thông tin, sơ đồ mã, sơ đồ luồng, dữ liệu, endpoint, nguồn CodeCash, rà soát, cải tiến | `pnpm check:docs` |
+| Test service | mỗi endpoint một ca đúng + một ca lỗi; mỗi quy tắc mình phụ trách một ca vi phạm | `pnpm test` |
+| Màn web | route lazy, quyền trong `navConfig.ts`, chữ vi/en, ≥ 5 test mỗi màn (hàm thuần, tương tác, MSW đúng + lỗi) | `pnpm check` (độ phủ ≥ 50%) |
+| Postman | ≥ 5 request qua gateway (đúng + lỗi nghiệp vụ), có script kiểm, thêm vào `postman/` | job CI `stack` |
+| Compose, gateway | service trong `compose.yaml` (database riêng), tiền tố trong `gateway/routes.json` | job CI `stack` |
+| Saga, thí nghiệm | luồng của mình chạy được qua lỗi (§8, §9 thiết kế), số liệu trước/sau | báo cáo |
+| Báo cáo | một chương MS (service, quy tắc, API, độ tin cậy) + phần LTWNC (pattern, state, test) | 11–12/12 |
+
+Thêm service vào hệ chạy chung (người tạo repo service làm một lần, PR vào repo cha `main`): mục
+"Chạy cả hệ" của `docs/HE_THONG.md`.
+
 ## 4. Lịch
+
+Đã xong trước 27/11 (TV1): chassis (lỗi RFC 9457, DTO, lọc/nhập/xuất, `ServiceClient`, token RS256),
+identity đầy đủ, gateway, `compose.yaml`, Postman identity, các màn xác thực của web. Từ 27/11 TV1 lo
+nối service mới vào hệ, gỡ vướng phần nền trong ngày, và làm phần nền outbox cùng TV6.
 
 | Ngày | Tất cả | Mốc kiểm |
 | --- | --- | --- |
 | T6 27/11 | Chuẩn bị (mục 2); điền `SERVICE.md` (dữ liệu, endpoint, nguồn CodeCash); viết `openapi.yaml` | Mỗi repo service CI xanh |
 | T7 28/11 | Endpoint đầu tiên + test; màn đầu tiên trên MSW | Mỗi người 1 PR merge |
-| CN 29/11 | Endpoint còn lại của luồng chính; identity xong token, refresh | |
-| T2 30/11 | `compose.yaml` chạy đủ service; web gọi qua gateway | `docker compose up --wait` xanh |
+| CN 29/11 | Endpoint còn lại của luồng chính | |
+| T2 30/11 | Mỗi service vào `compose.yaml` và `gateway/routes.json`; web gọi qua gateway | job CI `stack` xanh |
 | 01–03/12 | Nghiệp vụ chính từng service; S1, S3 | |
 | T6 04/12 | **Ngày tích hợp**: chạy luồng demo §5 từ đầu tới cuối, sửa chỗ gãy | Luồng demo chạy hết |
 | 05–07/12 | S2, S4; outbox, RabbitMQ, DLQ; màn còn lại | |

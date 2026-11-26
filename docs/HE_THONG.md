@@ -1,6 +1,7 @@
 # Hệ thống trên một trang
 
-Đọc tệp này trước khi đọc mã: các service, ai gọi ai, token đi thế nào, dữ liệu nằm đâu. Chi tiết
+Đọc tệp này trước khi đọc mã: các service, ai gọi ai, token đi thế nào, dữ liệu nằm đâu. Phạm vi,
+quy tắc, API và saga: `docs/PHAN_TICH_THIET_KE.md`. Chi tiết
 một service ở `service/SERVICE.md` của repo service đó; chassis ở `packages/nest-common/MODULES.md`.
 
 **Luật cập nhật**: thêm service, đổi cổng hoặc schema, thêm một lời gọi giữa hai service, đổi luồng

@@ -2,6 +2,7 @@
 
 Mỗi bước dựng phần nền ghi một mục; mới nhất ở trên.
 
+- **docs: analysis and design, team split with a definition of done** — `docs/PHAN_TICH_THIET_KE.md` (phạm vi MoSCoW, vai trò, 6 service nghiệp vụ, 25 quy tắc BR có mã lỗi, máy trạng thái, API từng service, lời gọi và sự kiện, saga S1–S4, thí nghiệm F1–F4, ma trận yêu cầu hai môn có trạng thái, ADR); `KICH_BAN_VIBE_CODE.md` mục 3: lát dọc từng người kèm quy tắc, saga, pattern LTWNC, bảng "xong là thế nào"; `CLAUDE.md` trỏ tới thiết kế
 - **docs: the stack runs** — `docs/HE_THONG.md`: gateway và identity chạy được, database riêng từng service, mục 6 "Chạy cả hệ" (compose, Newman, cách thêm service)
 - **ci: run the whole stack and the Postman collection** — job `stack` (repo cha, khi có `compose.yaml`): checkout repo service cạnh repo cha, `docker compose up --build --wait`, Newman chạy `postman/`; lỗi thì in log compose (MS-R7, MS-R8, MS-B4)
 - **feat(infra): one database and one login per service** — `infra/postgres-init.sql` tạo database và tài khoản riêng cho từng service, thu quyền kết nối chéo (MS-R2); `compose.yaml` của nhánh `main` gắn nó vào Postgres
