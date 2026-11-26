@@ -10,7 +10,9 @@ import {
   Repository,
   RolesGuard,
 } from "@sc/nest-common";
+import { ThrottlerModule } from "@nestjs/throttler";
 import { AuthController, AuthGuard, AuthService, JwksController } from "./auth";
+import { ClientThrottlerGuard } from "./throttle";
 
 /**
  * Identity service: companies, accounts, sign-in and sign-up. It signs the access tokens every
@@ -18,6 +20,10 @@ import { AuthController, AuthGuard, AuthService, JwksController } from "./auth";
  * and the token not revoked.
  */
 @Module({
+  // 300 requests a minute per client by default; sign-in routes set their own, stricter limit.
+  imports: [
+    ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 300 }]),
+  ],
   controllers: [
     HealthController,
     AuthController,
@@ -30,7 +36,8 @@ import { AuthController, AuthGuard, AuthService, JwksController } from "./auth";
     Repository,
     BaseService,
     AuthService,
-    // Order matters: the token sets req.user, then roles and permissions are checked.
+    // Order matters: limits first, then the token sets req.user, then permissions are checked.
+    { provide: APP_GUARD, useClass: ClientThrottlerGuard },
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],
