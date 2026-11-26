@@ -240,7 +240,7 @@ test("a company administrator invites an assignable role; the person activates i
 
 test("a system administrator invites into a named organisation", async () => {
   const sys = (
-    await auth.login({ email: "sysadmin@codecash.vn", password: "Passw0rd!" })
+    await auth.login({ email: "sysadmin@scw.vn", password: "Passw0rd!" })
   ).user;
   await rejectsWith(
     auth.invite(sys, { email: "a@x.vn", displayName: "A", role: "AUDITOR" }),
@@ -256,10 +256,10 @@ test("a system administrator invites into a named organisation", async () => {
     "ORGANIZATION_NOT_FOUND",
   );
   const invited = await auth.invite(sys, {
-    email: "kiemtoan@codecash.vn",
+    email: "kiemtoan@scw.vn",
     displayName: "Kiểm toán",
     role: "AUDITOR",
     organizationId: "OPS",
   });
-  assert.equal(invited.email, "kiemtoan@codecash.vn");
+  assert.equal(invited.email, "kiemtoan@scw.vn");
 });

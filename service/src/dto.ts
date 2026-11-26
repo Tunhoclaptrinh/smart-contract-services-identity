@@ -20,7 +20,7 @@ import {
 const PASSWORD = { minLength: 12, maxLength: 128 };
 
 export class LoginDto {
-  @ApiProperty({ example: "sysadmin@codecash.vn" })
+  @ApiProperty({ example: "sysadmin@scw.vn" })
   @IsString()
   @IsNotEmpty()
   @MaxLength(254)

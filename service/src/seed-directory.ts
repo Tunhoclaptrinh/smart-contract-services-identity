@@ -2,8 +2,8 @@ import type { Role } from "@sc/nest-common";
 
 /**
  * Seed organisations and accounts of the base: the platform operator and one demo company, so the
- * app can be signed into before any business data exists. Same shape as the business directory
- * (CodeCash `domain/accounts.ts`), which replaces it once parties are imported.
+ * app can be signed into before any business data exists. The full business directory (every
+ * party of the sample data) has the same shape and replaces it once parties are imported.
  */
 export const INTERNAL_ORG = { id: "OPS", name: "Vận hành nền tảng" };
 
@@ -42,7 +42,7 @@ export function buildDirectory(): {
       ...INTERNAL_ORG,
       code: INTERNAL_ORG.id,
       kind: "INTERNAL",
-      email: "contact@codecash.vn",
+      email: "contact@scw.vn",
       category: "INTERNAL_CONTROL",
       region: "HANOI",
       origin: "SEED",
@@ -87,7 +87,7 @@ export function buildDirectory(): {
   const accounts = [
     account(
       "u-sysadmin",
-      "sysadmin@codecash.vn",
+      "sysadmin@scw.vn",
       "Trịnh Hoài Phương",
       "Quản trị hệ thống",
       "SYSTEM_ADMIN",
@@ -95,7 +95,7 @@ export function buildDirectory(): {
     ),
     account(
       "u-auditor",
-      "auditor@codecash.vn",
+      "auditor@scw.vn",
       "Mai Xuân Lộc",
       "Chuyên viên kiểm tra toàn vẹn",
       "AUDITOR",
