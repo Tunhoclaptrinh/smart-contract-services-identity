@@ -2,6 +2,7 @@
 
 Mỗi bước dựng phần nền ghi một mục; mới nhất ở trên.
 
+- **docs: architecture rationale and the main flows** — `docs/LUAN_CU_KIEN_TRUC.md`: bài toán và tải thật (vì sao không biện minh bằng hiệu năng), tách service đủ chưa và ba ranh giới dữ liệu đã chốt, đồng bộ hay bất đồng bộ từng tương tác, từng công nghệ giải quyết gì và không có thì sao, đồ thị phụ thuộc không vòng, có cần hàng đợi không (chỉ ba chỗ), vì sao CI và GitHub Actions, luồng L1–L8, những gì cố ý không làm, rủi ro; `PHAN_TICH_THIET_KE.md`: decision nhận gói dữ kiện thay vì gọi ngược, phạm vi hàng đợi, S3 dùng job chấm lại
 - **docs: analysis and design, team split with a definition of done** — `docs/PHAN_TICH_THIET_KE.md` (phạm vi MoSCoW, vai trò, 6 service nghiệp vụ, 25 quy tắc BR có mã lỗi, máy trạng thái, API từng service, lời gọi và sự kiện, saga S1–S4, thí nghiệm F1–F4, ma trận yêu cầu hai môn có trạng thái, ADR); `KICH_BAN_VIBE_CODE.md` mục 3: lát dọc từng người kèm quy tắc, saga, pattern LTWNC, bảng "xong là thế nào"; `CLAUDE.md` trỏ tới thiết kế
 - **docs: the stack runs** — `docs/HE_THONG.md`: gateway và identity chạy được, database riêng từng service, mục 6 "Chạy cả hệ" (compose, Newman, cách thêm service)
 - **ci: run the whole stack and the Postman collection** — job `stack` (repo cha, khi có `compose.yaml`): checkout repo service cạnh repo cha, `docker compose up --build --wait`, Newman chạy `postman/`; lỗi thì in log compose (MS-R7, MS-R8, MS-B4)

@@ -5,6 +5,9 @@ service nói chuyện với nhau ra sao, và mỗi yêu cầu của hai môn n�
 `docs/HE_THONG.md`. Ai làm, ngày nào: `docs/KICH_BAN_VIBE_CODE.md`. Nghiệp vụ gốc, luôn thắng khi
 mâu thuẫn: `../codecash/docs/NGHIEP_VU.md`.
 
+Vì sao từng lựa chọn (đồng bộ hay hàng đợi, gateway, RS256, saga, CI…) và các luồng chính đi qua
+đâu: `docs/LUAN_CU_KIEN_TRUC.md`.
+
 **Luật cập nhật**: chủ service sửa mục của service mình (§3, §6, §7, §8) khi hợp đồng API, quy tắc
 hay luồng đổi; `service/openapi.yaml` là bản chi tiết và phải khớp bảng ở đây.
 
@@ -56,6 +59,11 @@ một database riêng.
 | payment | TV5 | payments (lệnh chi), saga-log | Lập lệnh chi khi quyết định trả tiền (BR-B10), duyệt, gửi ngân hàng mô phỏng có `Idempotency-Key`, PENDING và đối soát, gửi lại (S4) | chưa |
 | audit | TV6 | audit (tập trung, chuỗi băm), anchor-jobs, notifications, processed-messages | Nhận sự kiện của mọi service (idempotent, DLQ); chuỗi băm và `GET /audit/verify`; neo Merkle; thông báo trong ứng dụng và email mô phỏng | chưa |
 | gateway | TV1 | — | Điểm vào duy nhất, kiểm JWT lớp 1, giới hạn, CORS, request id, 503/504 | **xong** |
+
+Ranh giới dữ liệu đã chốt (lập luận ở `docs/LUAN_CU_KIEN_TRUC.md` §2): identity là nguồn của tổ
+chức, `parties` ở execution chỉ là bản sao chỉ đọc theo mã; execution giữ **ảnh chụp bất biến** của
+hợp đồng đã ký (gói v1), contract giữ bản đang soạn; decision **không gọi ngược** execution mà nhận
+trọn gói dữ kiện của mốc trong request.
 
 **Vì sao chia như vậy**: soạn thảo, ký, thực hiện, quyết định, chi tiền, kiểm toán có dữ liệu sở
 hữu, tần suất đổi và rủi ro khác nhau (giá trị pháp lý của chữ ký khác an toàn dòng tiền; engine là
@@ -173,8 +181,8 @@ khác.
 | --- | --- | --- | --- |
 | gateway → service | 10 s | không | 503 / 504 cho web |
 | signing → contract (đổi trạng thái) | 2 s | 2, cùng mã saga | bù trừ S1 |
-| signing → nhà cung cấp ký mô phỏng | 3 s | 2, cùng `Idempotency-Key`; circuit breaker | lượt `PENDING_PROVIDER`, đối soát |
-| execution → decision (chấm mốc) | 2 s | 2 (hàm thuần) ; circuit breaker | `PENDING_EVALUATION` + outbox (S3) |
+| signing → nhà cung cấp ký mô phỏng | 3 s | 2, cùng `Idempotency-Key`; circuit breaker (phụ thuộc ngoài) | lượt `PENDING_PROVIDER`, đối soát |
+| execution → decision (chấm mốc; gửi kèm gói dữ kiện của mốc) | 2 s | 2 (hàm thuần) | `PENDING_EVALUATION`, job chấm lại mỗi 10 s (S3) |
 | payment → decision (xác nhận quyết định) | 2 s | 2 (đọc) | bù trừ S4 |
 | payment → ngân hàng mô phỏng | 3 s | 2, cùng mã lệnh; circuit breaker + bulkhead 5 | `PENDING` + đối soát (S4) |
 | outbox → hàng đợi | — | mỗi 2 s tới khi gửi được | giữ trong outbox |
@@ -186,9 +194,13 @@ khác.
 | `signing.step_ready` | signing | audit (thông báo) | `eventId` |
 | `contract.activated` (kèm gói hợp đồng v1) | signing | execution (S2), audit | `contract.id` |
 | `evidence.submitted`, `approval.recorded`, `dispute.opened`, `dispute.resolved` | execution | audit | `eventId` |
-| `evaluation.requested` | execution | execution (consumer khi decision sống lại) | `milestoneId + version` |
 | `decision.made` | decision | execution, audit | `evaluationId` |
 | `payment.order_created`, `payment.settled`, `payment.failed` | payment | execution, audit | `orderId` |
+
+Hàng đợi (RabbitMQ) chỉ dùng cho sự kiện **nhiều bên nhận hoặc bên phát không được phụ thuộc bên
+nhận**: `contract.activated`, mục nhật ký về audit, thông báo, `payment.settled`. Luồng tiền và luồng
+chấm mốc là đồng bộ có PENDING. Thiếu thời gian thì outbox + gửi HTTP có thử lại thay cho broker
+(`LUAN_CU_KIEN_TRUC.md` §6).
 
 Gói hợp đồng v1 (`contract.activated`): hợp đồng (mã, loại, giá trị dạng chuỗi thập phân, thời hạn,
 chính sách duyệt), hai bên, các mốc (thứ tự, loại, hạn, %, giá trị, chứng từ bắt buộc, vai trò duyệt,
@@ -201,7 +213,7 @@ luật áp dụng. Tên trường mốc trùng cột `milestones.csv` của Data
 | --- | --- | --- | --- | --- |
 | S1 | Mở phiên ký: contract `AGREED → SIGNING` → signing đóng băng văn bản → tạo phiên và lượt | signing | **bù trừ ngược**: huỷ phiên, huỷ phiên bản văn bản, hợp đồng về `AGREED` | TV3 |
 | S2 | Kích hoạt: chữ ký cuối → niêm phong → contract `ACTIVE` → phát `contract.activated` → execution nhập | sự kiện | outbox gửi lại tới khi được; execution nhập idempotent; gói sai mã băm vào DLQ | TV3 phát, TV4 nhận |
-| S3 | Nộp chứng từ khi decision sập | execution | **PENDING**: lưu chứng từ (201), mốc `PENDING_EVALUATION`, outbox `evaluation.requested`, tự chấm khi decision sống lại | TV4 |
+| S3 | Nộp chứng từ khi decision sập | execution | **PENDING**: lưu chứng từ (201), mốc `PENDING_EVALUATION`, job chấm lại khi decision sống lại; không chứng từ nào mất, không quyết định nào đoán | TV4 |
 | S4 | Lập và chi lệnh: mốc `PAYMENT_REQUESTED` → xác nhận quyết định → lệnh `APPROVED` → gửi ngân hàng | payment | **bù trừ** bước 1–3 khi lỗi rõ ràng; **PENDING** + đối soát theo `Idempotency-Key` khi hết thời gian | TV5 |
 
 ```mermaid

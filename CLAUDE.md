@@ -32,6 +32,7 @@ Không chép chassis vào `service/` để lách.
 | --- | --- |
 | Toàn cảnh: service, cổng, schema, ai gọi ai, token, luồng chính | `docs/HE_THONG.md` |
 | Phạm vi, tính năng, quy tắc BR, API từng service, saga, ma trận yêu cầu hai môn | `docs/PHAN_TICH_THIET_KE.md` |
+| Vì sao chọn kiến trúc, công nghệ nào; luồng chính đồng bộ hay bất đồng bộ, đi qua service nào | `docs/LUAN_CU_KIEN_TRUC.md` |
 | Chassis có gì; CRUD chung (lọc, nhập, xuất); định dạng lỗi | `packages/nest-common/MODULES.md` |
 | Một service: dữ liệu, endpoint, sơ đồ mã, sơ đồ luồng | `service/SERVICE.md`, `service/openapi.yaml` |
 | Nghiệp vụ: vai trò, vòng đời, luật, tính tiền, mã trạng thái | `../codecash/docs/NGHIEP_VU.md` (bản duy nhất; mục 14 là từ điển trạng thái) |
