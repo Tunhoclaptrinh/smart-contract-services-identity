@@ -7,36 +7,43 @@
         "key": "name",
         "type": "string",
         "required": true,
-        "maxLength": 250
+        "maxLength": 250,
+        "label": "Tên tổ chức"
       },
       {
         "key": "code",
         "type": "string",
         "required": true,
         "maxLength": 40,
-        "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$"
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]*$",
+        "label": "Mã",
+        "unique": true
       },
       {
         "key": "kind",
         "type": "select",
         "required": true,
-        "options": ["BUYER", "SUPPLIER", "INTERNAL"]
+        "options": ["BUYER", "SUPPLIER", "INTERNAL"],
+        "label": "Loại"
       },
       {
         "key": "email",
         "type": "email",
-        "maxLength": 254
+        "maxLength": 254,
+        "label": "Email"
       },
       {
         "key": "taxCode",
         "type": "string",
         "maxLength": 14,
-        "pattern": "^(\\d{10}(-\\d{3})?|\\d{12})$"
+        "pattern": "^(\\d{10}(-\\d{3})?|\\d{12})$",
+        "label": "Mã số thuế"
       },
       {
         "key": "address",
         "type": "textarea",
-        "maxLength": 250
+        "maxLength": 250,
+        "label": "Địa chỉ"
       }
     ]
   },
@@ -47,18 +54,22 @@
         "key": "displayName",
         "type": "string",
         "required": true,
-        "maxLength": 250
+        "maxLength": 250,
+        "label": "Họ tên"
       },
       {
         "key": "email",
         "type": "email",
         "required": true,
-        "maxLength": 254
+        "maxLength": 254,
+        "label": "Email",
+        "unique": true
       },
       {
         "key": "title",
         "type": "string",
-        "maxLength": 250
+        "maxLength": 250,
+        "label": "Chức danh"
       },
       {
         "key": "role",
@@ -74,23 +85,27 @@
           "AUDITOR",
           "SUPPLIER",
           "ORG_ADMIN"
-        ]
+        ],
+        "label": "Vai trò"
       },
       {
         "key": "organizationId",
         "type": "string",
         "required": true,
         "ref": "organizations",
-        "maxLength": 250
+        "maxLength": 250,
+        "label": "Tổ chức"
       },
       {
         "key": "partyId",
         "type": "string",
-        "maxLength": 250
+        "maxLength": 250,
+        "label": "Bên Data Pack"
       },
       {
         "key": "active",
-        "type": "boolean"
+        "type": "boolean",
+        "label": "Hoạt động"
       }
     ]
   },
@@ -201,13 +216,15 @@
         "key": "name",
         "type": "string",
         "required": true,
-        "maxLength": 250
+        "maxLength": 250,
+        "label": "Tên"
       },
       {
         "key": "value",
         "type": "string",
         "required": true,
-        "maxLength": 250
+        "maxLength": 250,
+        "label": "Giá trị"
       }
     ]
   },

@@ -7,6 +7,7 @@ import {
 } from "@nestjs/common";
 import { randomUUID, createHash } from "node:crypto";
 import { Repository } from "../repository";
+import { problemBody, toFieldIssue, type FieldIssue } from "../problem";
 
 /** Identical failures (same actor, client address, status and code) within this window share one entry. */
 export const FAILURE_WINDOW_MS = 60_000;
@@ -110,11 +111,23 @@ export class AllExceptionsFilter implements ExceptionFilter {
         this.log.error("Could not record failed request", auditError);
       }
     }
-    res.status(status).json({
-      statusCode: status,
-      code: typeof message === "string" ? message : "VALIDATION_ERROR",
-      message,
-      requestId: req.requestId,
-    });
+    const detailErrors = (detail as { errors?: unknown } | null)?.errors;
+    const errors: FieldIssue[] | undefined = Array.isArray(detailErrors)
+      ? (detailErrors as FieldIssue[])
+      : Array.isArray(message)
+        ? message.map((m) => toFieldIssue(String(m)))
+        : undefined;
+    res
+      .status(status)
+      .type("application/problem+json")
+      .json(
+        problemBody({
+          status,
+          code: status === 500 ? "INTERNAL_ERROR" : errorCode,
+          errors,
+          instance: req.originalUrl,
+          requestId: req.requestId,
+        }),
+      );
   }
 }

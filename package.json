@@ -9,7 +9,7 @@
     "lint": "eslint --max-warnings 0 packages service",
     "format": "prettier --write packages service",
     "format:check": "prettier --check packages service",
-    "test": "pnpm build && node packages/nest-common/test/postgres.test.mjs && pnpm --filter \"{./service}\" --if-present test && node scripts/smoke-service.mjs",
+    "test": "pnpm build && node --test packages/nest-common/test/*.test.mjs && pnpm --filter \"{./service}\" --if-present test && node scripts/smoke-service.mjs",
     "check:base": "node scripts/check-base-untouched.mjs",
     "infra:up": "docker compose -f infra/compose.yaml up -d --wait",
     "infra:up:pg": "docker compose -f infra/compose.yaml --profile postgres up -d --wait postgres",
