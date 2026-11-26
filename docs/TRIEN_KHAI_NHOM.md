@@ -83,6 +83,8 @@ Làm theo thứ tự; mỗi dòng có cách kiểm.
 
 ## 5. Ba ngày đầu của từng người
 
+Việc đầy đủ của từng người (đến khi bảo vệ): `docs/nhiem-vu/TV<số>.md`.
+
 | Người | 27/11 | 28/11 | 29/11 |
 | --- | --- | --- | --- |
 | TV1 | ngày 0 (§2) | outbox relay trong chassis (đẩy mục nhật ký đã ghi trong giao dịch), RabbitMQ trong compose (cùng TV6) | nối service đầu tiên xong vào compose, gateway, CI; gỡ vướng phần nền |

@@ -30,6 +30,7 @@ Không chép chassis vào `service/` để lách.
 
 | Cần biết | Đọc |
 | --- | --- |
+| Bản nhiệm vụ của nhóm; việc của từng người | `docs/NHIEM_VU.md`, `docs/nhiem-vu/TV<số>.md` |
 | Bộ tài liệu, đọc gì trước theo vai trò | `docs/README.md` |
 | BTL khác bài dự thi ở đâu, sửa gì cho sát thực tế | `docs/DINH_VI_SAN_PHAM.md` |
 | Phần mã cũ nào giữ, chỉnh, bỏ; sửa chung C1–C12 | `docs/TAN_DUNG_CODECASH.md` |

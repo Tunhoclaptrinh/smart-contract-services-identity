@@ -3,20 +3,26 @@
 Mọi tài liệu chung nằm ở đây (nhánh `base`, có trong mọi repo service). Đọc theo thứ tự của vai trò
 mình; mỗi tệp tự nói tệp nào đọc tiếp.
 
-## Thứ tự đọc
+## Bắt đầu từ đây
 
-| Bạn là | Đọc lần lượt | Thời gian |
-| --- | --- | --- |
-| Thành viên mới, hôm nay bắt đầu | `DINH_VI_SAN_PHAM.md` → `HE_THONG.md` → `KICH_BAN_VIBE_CODE.md` §3 → `TRIEN_KHAI_NHOM.md` §4–5 → `service/SERVICE.md` của repo mình | 45 phút |
-| Chuẩn bị chuyển mã cũ | `TAN_DUNG_CODECASH.md` (mục service của mình) → `DOI_CHIEU_CODECASH.md` → `CLAUDE.md` §5 | 20 phút |
-| Viết báo cáo, slide, chuẩn bị bảo vệ | `BAO_CAO_VA_BAO_VE.md` → `LUAN_CU_KIEN_TRUC.md` → `PHAN_TICH_THIET_KE.md` | 40 phút |
-| Trưởng nhóm, điều phối | `TRIEN_KHAI_NHOM.md` → `DINH_VI_SAN_PHAM.md` §7 → `KICH_BAN_VIBE_CODE.md` §4 | |
-| AI (Claude Code, Cursor…) | `CLAUDE.md` của repo (bảng "Cần biết gì thì đọc đâu" trỏ về các tệp dưới) | |
+1. **`NHIEM_VU.md`** (10 phút): làm gì, ai làm gì, ai cần gì của ai, làm theo thứ tự nào, tự kiểm ra sao.
+2. **Thẻ nhiệm vụ của bạn** `nhiem-vu/TV<số>.md`: việc theo thứ tự có tiêu chí xong, phối hợp, quy tắc
+   bạn giữ, tự kiểm, phần báo cáo.
+3. Các tệp dưới đây khi thẻ nhiệm vụ trỏ tới.
+
+| Bạn cần | Đọc thêm |
+| --- | --- |
+| Chuyển mã cũ | `TAN_DUNG_CODECASH.md` (mục service của bạn) → `DOI_CHIEU_CODECASH.md` → `CLAUDE.md` §5 |
+| Viết báo cáo, slide, bảo vệ | `BAO_CAO_VA_BAO_VE.md` → `LUAN_CU_KIEN_TRUC.md` → `PHAN_TICH_THIET_KE.md` |
+| Điều phối (nhóm trưởng) | `TRIEN_KHAI_NHOM.md` → `DINH_VI_SAN_PHAM.md` §7 → `KICH_BAN_VIBE_CODE.md` §4 |
+| Dùng AI (Claude Code, Cursor…) | `CLAUDE.md` của repo (bảng "Cần biết gì thì đọc đâu") |
 
 ## Các tệp
 
 | Tệp | Trả lời câu hỏi | Ai giữ |
 | --- | --- | --- |
+| `NHIEM_VU.md` | Bản nhiệm vụ ngắn của cả nhóm | nhóm trưởng |
+| `nhiem-vu/TV1.md` … `TV6.md` | Việc chi tiết của từng người | từng người (nhóm trưởng sửa khi đổi phân công) |
 | `DINH_VI_SAN_PHAM.md` | BTL làm sản phẩm gì, khác bài dự thi ở đâu, sửa gì cho sát thực tế, nhật ký quyết định | trưởng nhóm |
 | `HE_THONG.md` | Toàn cảnh: service, cổng, database, token, luồng chính, chạy cả hệ | TV1 |
 | `PHAN_TICH_THIET_KE.md` | Phạm vi, vai trò, 27 quy tắc, API từng service, saga, thí nghiệm, ma trận yêu cầu hai môn | chủ từng service sửa mục của mình |

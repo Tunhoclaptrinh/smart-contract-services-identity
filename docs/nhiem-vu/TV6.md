@@ -1,0 +1,55 @@
+# TV6: audit, thông báo, hàng đợi
+
+| | |
+| --- | --- |
+| Repo | `smart-contract-services-audit` → `btl-backend-audit`, cổng 3008, database `audit`; phần nền outbox, hàng đợi cùng nhóm trưởng (repo cha) |
+| Màn web | nhật ký, kiểm toàn vẹn, DLQ, tổng quan, thông báo; script chụp màn hình |
+| Saga, thí nghiệm | DLQ; F4; tải k6 cho mọi thí nghiệm |
+| Duyệt chéo | TV1 |
+
+**Mục tiêu**: mọi thao tác của mọi service về một nơi kiểm toán độc lập, kiểm được không ai sửa lịch sử;
+sự kiện không mất, message hỏng không chặn hàng đợi; người dùng được báo đúng việc.
+
+## Đọc trước (30 phút)
+
+`../NHIEM_VU.md`; `../LUAN_CU_KIEN_TRUC.md` §3, §6 (hàng đợi), §8 L7; `../PHAN_TICH_THIET_KE.md` §7, §9;
+`../TAN_DUNG_CODECASH.md` §4.6.
+
+## Việc theo thứ tự
+
+| # | Việc | Xong khi |
+| --- | --- | --- |
+| 1 | Bước 1 của `NHIEM_VU.md` §4 | |
+| 2 | Phong bì sự kiện chung (ai, làm gì, tài nguyên, lúc nào, mã băm, `requestId`) cùng nhóm trưởng | mọi người duyệt |
+| 3 | RabbitMQ trong `compose.yaml`; outbox relay trong chassis (cùng nhóm trưởng) | một service phát, audit nhận |
+| 4 | Consumer idempotent (bảng `processed-messages`), thử lại 3 lần, DLQ; `GET /dlq`, `POST /dlq/{id}/replay` | message trùng không ghi hai lần; message hỏng vào DLQ |
+| 5 | Lưu bản sao nhật ký; `GET /audit-entries`, `GET /audit/verify` (đối chiếu đầu chuỗi băm từng service) | sửa một mục ở bản sao → verify báo sai |
+| 6 | Thông báo trong ứng dụng, email mô phỏng (`GET /notifications`, đánh dấu đã đọc) | |
+| 7 | Màn web nhật ký, toàn vẹn, DLQ, tổng quan (số liệu lấy từ API), thông báo | ≥ 5 test mỗi màn |
+| 8 | Chuyển script chụp màn hình tự động sang web, trỏ vào gateway (`BAO_CAO_VA_BAO_VE.md` §3.3) | một lệnh ra bộ ảnh |
+| 9 | Kịch bản k6 dùng chung cho F1–F4; Lighthouse trước/sau tách bundle | |
+| 10 | F4: tắt execution khi hợp đồng vừa ký, thêm một message hỏng; đo số hợp đồng mất trước/sau | bảng số liệu |
+| 11 | Compose, gateway, ≥ 5 request Postman | job `stack` xanh |
+
+## Phối hợp
+
+| Bạn cung cấp | Cho | | Bạn cần | Từ |
+| --- | --- | --- | --- | --- |
+| phong bì sự kiện, hàng đợi, consumer mẫu | mọi người | | outbox trong chassis | nhóm trưởng |
+| kịch bản k6 | TV3, TV4, TV5 | | sự kiện của từng service | mọi người |
+
+## Tự kiểm riêng
+
+- Gửi cùng một message hai lần → một mục.
+- Message sai cấu trúc → DLQ sau 3 lần, message sau vẫn được xử lý.
+- Tắt audit → các service vẫn thao tác được; bật lại → nhật ký về đủ.
+
+## Báo cáo và vấn đáp
+
+MS 2.4 (đồng bộ, bất đồng bộ), MS 4.1, MS 4.3 (outbox, hàng đợi, DLQ), MS 5.4 (F4), MS 6.2 (số liệu thí
+nghiệm); LT e (Lighthouse, độ phủ). Câu hỏi: consumer idempotent và DLQ; kiểm chuỗi băm chéo giữa
+service; vì sao hàng đợi chỉ ở năm chỗ.
+
+## Khi chậm
+
+Cắt: neo Merkle → email (giữ thông báo trong ứng dụng) → broker (giữ outbox gửi HTTP có thử lại).

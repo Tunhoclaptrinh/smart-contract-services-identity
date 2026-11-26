@@ -37,6 +37,8 @@ Trưởng nhóm làm trước, sáng 27/11: tạo repo service cho từng ngư�
 
 ## 3. Chia việc
 
+Bản ngắn cho thành viên: `docs/NHIEM_VU.md`; việc chi tiết từng người: `docs/nhiem-vu/TV<số>.md`.
+
 Thiết kế chốt (tính năng, quy tắc, API, saga, ma trận yêu cầu hai môn):
 `docs/PHAN_TICH_THIET_KE.md`. Mỗi người sở hữu trọn **một lát dọc**: service + màn web gọi nó +
 test + request Postman + một chương báo cáo; lịch sử commit tự nói ai làm gì, vấn đáp ai cũng có
