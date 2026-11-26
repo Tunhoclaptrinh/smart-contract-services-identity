@@ -54,9 +54,9 @@ một database riêng.
 | --- | --- | --- | --- | --- |
 | identity | TV1 | organizations, users, settings, refresh-tokens, one-time-tokens, mail-outbox | Đăng ký, đăng nhập, refresh, đổi và quên mật khẩu, mời thành viên, JWKS, khoá tài khoản | **xong** |
 | contract | TV2 | contract-templates, contract-drafts, milestone-templates, rule-versions, extraction-proposals, comments | Mẫu hợp đồng; soạn bản nháp từ mẫu; số hoá mốc (BR-A03…A07); thành viên và nhiệm vụ; rà soát hai chiều, bình luận, xác nhận (BR-A08); máy trạng thái (BR-A02); hồ sơ pháp lý theo loại hợp đồng (P1); lãi chậm trả (P2); mẫu từ 4 quy trình có sẵn (N2) | chưa |
-| signing | TV3 | documents (phiên bản, mã băm, niêm phong), signing (phiên ký, lượt), signing-requests, signing-profiles, attachments | Dựng văn bản từ điều khoản, đóng băng, mã băm; phiên ký và lượt ký đúng thứ tự (BR-A09, A10); ký điện tử mô phỏng (mức `SIMULATED`, P4) qua nhà cung cấp mô phỏng; niêm phong; xác minh công khai; tải tệp chứng từ (BR-A11); điều phối S1, phát `contract.activated` (S2) | chưa |
+| signing | TV3 | documents (phiên bản, mã băm, niêm phong), signing (phiên ký, lượt), signing-requests, signing-profiles, attachments | Dựng văn bản từ điều khoản, đóng băng, mã băm; phiên ký và lượt ký đúng thứ tự (BR-A09, A10); ký điện tử mô phỏng (mức `SIMULATED`, P4) qua nhà cung cấp mô phỏng; niêm phong; xác minh công khai; tải tệp chứng từ (BR-A11); **xác minh** chữ ký số trên văn bản và chứng từ (chứng thư còn hiệu lực, chưa thu hồi, dấu thời gian), tra cứu hoá đơn điện tử (mô phỏng), lưu bằng chứng dài hạn (BR-A12); điều phối S1, phát `contract.activated` (S2) | chưa |
 | execution | TV4 | parties, contracts (bản thực hiện), milestones, events (chứng từ), status-history, acceptance-requests, amendments, exceptions, notes | Nhập hợp đồng đã ký (S2, idempotent); nạp dữ liệu mẫu (D1); mốc và "việc còn lại" có người chịu trách nhiệm; nộp chứng từ và hoá đơn đủ trường (BR-B03, B08, B11, B13); phê duyệt theo vai trò (BR-B05); tranh chấp (BR-B09); ngoại lệ hai người (BR-B12); phụ lục dời hạn; thanh lý; gọi decision, PENDING_EVALUATION (S3) | chưa |
-| decision (Python) | TV5 | evaluations, engine-runs, payment-rules (bộ luật có phiên bản) | FastAPI quanh engine Python: chấm một mốc ra RELEASE/HOLD/PENALTY/REJECT kèm vết luật (BR-B01…B07); chạy thử; một bộ luật đã công bố cho mỗi hợp đồng, có phiên bản (N1); kiểm chứng bộ luật trên dữ liệu mẫu (D2) | chưa |
+| decision | TV5 | evaluations, engine-runs, payment-rules (bộ luật có phiên bản) | Engine sau một hợp đồng API (hiện là engine Python bọc FastAPI, thay được): chấm một mốc ra RELEASE/HOLD/PENALTY/REJECT kèm vết luật (BR-B01…B07); chạy thử; một bộ luật đã công bố cho mỗi hợp đồng, có phiên bản (N1); kiểm chứng bộ luật trên dữ liệu mẫu (D2); chạy bóng engine mới; chấm lại theo lô khi công bố luật | chưa |
 | payment | TV5 | payments (lệnh chi), saga-log | Lập lệnh chi khi quyết định trả tiền (BR-B10), duyệt; **không giữ tiền**, chỉ gửi lệnh sang ngân hàng của bên mua (P7): gửi ngân hàng mô phỏng có `Idempotency-Key`, PENDING và đối soát, gửi lại (S4) | chưa |
 | audit | TV6 | audit (tập trung, chuỗi băm), anchor-jobs, notifications, processed-messages | Nhận sự kiện của mọi service (idempotent, DLQ); chuỗi băm và `GET /audit/verify`; neo Merkle; thông báo trong ứng dụng và email mô phỏng | chưa |
 | gateway | TV1 | — | Điểm vào duy nhất, kiểm JWT lớp 1, giới hạn, CORS, request id, 503/504 | **xong** |
@@ -69,7 +69,7 @@ làm tròn tiền phạt chờ quyết định D4.
 
 **Vì sao chia như vậy** (bằng chứng đầy đủ: `LUAN_CU_KIEN_TRUC.md` §2): soạn thảo, ký, thực hiện, quyết định, chi tiền, kiểm toán có dữ liệu sở
 hữu, tần suất đổi và rủi ro khác nhau (giá trị pháp lý của chữ ký khác an toàn dòng tiền; engine là
-Python đã kiểm chứng trên 405 mốc của dữ liệu mẫu). **Vì sao không nhỏ hơn**: tách phê duyệt khỏi chứng từ, hay
+một engine thay được nằm sau hợp đồng API; phần ký và xác minh gọi nhiều hệ ngoài nhất). **Vì sao không nhỏ hơn**: tách phê duyệt khỏi chứng từ, hay
 tài liệu khỏi ký, làm mỗi lần chấm mốc hoặc mỗi lượt ký phải gọi chéo mà không giảm rủi ro nào.
 
 ## 4. Quy tắc nghiệp vụ (MS-R1)
@@ -90,6 +90,7 @@ Mỗi quy tắc có mã, service thực thi và mã lỗi; test của service ph
 | BR-A09 | Ký đúng lượt, mỗi lượt một lần, đúng người được gán | signing | 409 `NOT_YOUR_TURN`, 409 `ALREADY_SIGNED`, 403 `NOT_ASSIGNED_SIGNER` |
 | BR-A10 | Chữ ký gắn mã băm văn bản; văn bản đổi sau chữ ký đầu thì dừng | signing | 409 `DOCUMENT_CHANGED` |
 | BR-A11 | Tệp chỉ PDF, DOCX, PNG, JPEG theo nội dung, tối đa 20 MB | signing | 415 `UNSUPPORTED_TYPE`, 413 `FILE_TOO_LARGE` |
+| BR-A12 | Chứng từ mang chữ ký số hoặc là hoá đơn điện tử chỉ được tính khi xác minh đạt: chứng thư còn hiệu lực và chưa bị thu hồi tại thời điểm ký, nội dung khớp chữ ký, hoá đơn tra cứu được | signing (xác minh), execution (không tính khi chưa đạt) | chứng từ `VERIFYING` / `REJECTED` kèm lý do `SIGNATURE_INVALID`, `CERTIFICATE_REVOKED`, `INVOICE_NOT_FOUND` |
 | BR-B01 | Có tranh chấp mở thì HOLD | decision | quyết định HOLD `OPEN_DISPUTE` |
 | BR-B02 | Có từ chối hợp lệ thì REJECT | decision | quyết định REJECT |
 | BR-B03 | Chứng từ của bên không có thẩm quyền không được tính | execution | 403 `NOT_AUTHORIZED_PARTY` |
@@ -154,6 +155,7 @@ CRUD chung `/resources/<collection>` của chassis (`MODULES.md`); bảng dướ
 | contract | `POST /contracts/{id}/comments` | 201 | 409 khi đã khoá |
 | signing | `POST /documents` (multipart), `GET /documents/{id}`, `GET /documents/{id}/content` | 201/200 | 415, 413 BR-A11; 409 BR-A10 |
 | signing | `GET /public/verify?hash=` (khách) | 200 `{ status: VALID \| UNKNOWN }` | |
+| signing | `POST /verifications` (chứng từ hoặc văn bản, bất đồng bộ), `GET /verifications/{id}` | 202 `VERIFYING`, 200 kết quả kèm bằng chứng | 415, 422 `NOTHING_TO_VERIFY` |
 | signing | `POST /signing-sessions` (S1) | 201 | 409 `CONTRACT_NOT_AGREED` |
 | signing | `GET /signing-sessions/{id}` | 200 | 404 |
 | signing | `POST /signing-sessions/{id}/steps/{n}/sign` (`Idempotency-Key`) | 200 `SIGNED` / 202 `PENDING_PROVIDER` | 409, 403 BR-A09 |
@@ -186,6 +188,8 @@ khác.
 | signing → contract (đổi trạng thái) | 2 s | 2, cùng mã saga | bù trừ S1 |
 | signing → nhà cung cấp ký mô phỏng | 3 s | 2, cùng `Idempotency-Key`; circuit breaker (phụ thuộc ngoài) | lượt `PENDING_PROVIDER`, đối soát |
 | execution → decision (chấm mốc; gửi kèm gói dữ kiện của mốc) | 2 s | 2 (hàm thuần) | `PENDING_EVALUATION`, job chấm lại mỗi 10 s (S3) |
+| execution → signing (yêu cầu xác minh chứng từ) | qua hàng đợi | theo lịch, lùi dần | chứng từ ở `VERIFYING`, chưa tính vào điều kiện chi |
+| signing → dịch vụ kiểm thu hồi, dấu thời gian, tra cứu hoá đơn (mô phỏng) | 3 s | 2; circuit breaker; kết quả kiểm thu hồi được giữ ngắn hạn | thử lại theo lịch; quá hạn thì `FAILED` có lý do, người nộp gửi lại |
 | payment → decision (xác nhận quyết định) | 2 s | 2 (đọc) | bù trừ S4 |
 | payment → ngân hàng mô phỏng | 3 s | 2, cùng mã lệnh; circuit breaker + bulkhead 5 | `PENDING` + đối soát (S4) |
 | outbox → hàng đợi | — | mỗi 2 s tới khi gửi được | giữ trong outbox |
@@ -197,6 +201,9 @@ khác.
 | `signing.step_ready` | signing | audit (thông báo) | `eventId` |
 | `contract.activated` (kèm gói hợp đồng v1) | signing | execution (S2), audit | `contract.id` |
 | `evidence.submitted`, `approval.recorded`, `dispute.opened`, `dispute.resolved` | execution | audit | `eventId` |
+| `verification.requested` | execution | signing | `evidenceId` |
+| `evidence.verified`, `evidence.rejected` | signing | execution (chấm lại), audit | `verificationId` |
+| `rule_set.published` | decision | execution (đẩy chấm lại theo lô) | `ruleSetId + version` |
 | `decision.made` | decision | execution, audit | `evaluationId` |
 | `payment.order_created`, `payment.settled`, `payment.failed` | payment | execution, audit | `orderId` |
 
@@ -279,7 +286,7 @@ Chạy trước (tắt cơ chế bằng `RESILIENCE_ENABLED=false`) và sau, cù
 
 | Mã | Đáp ứng ở | Chủ | Trạng thái |
 | --- | --- | --- | --- |
-| MS-R1 ≥ 5 quy tắc | §4 (26 quy tắc), test vi phạm từng service | TV2 gom | 2/26 có test |
+| MS-R1 ≥ 5 quy tắc | §4 (27 quy tắc), test vi phạm từng service | TV2 gom | 2/27 có test |
 | MS-R2 chia service, database riêng | §3, `compose.yaml`, `infra/postgres-init.sql` | TV1 | **xong** khung; thêm service khi có |
 | MS-R3 ≥ 4 endpoint REST, lỗi 4xx, OpenAPI | §6, `service/openapi.yaml` từng repo | chủ service | identity **xong** |
 | MS-R4 gateway duy nhất | `gateway/` | TV1 | **xong** |
@@ -317,7 +324,8 @@ Chạy trước (tắt cơ chế bằng `RESILIENCE_ENABLED=false`) và sau, cù
 | 003 | Token RS256 + JWKS, access 15 phút + refresh xoay vòng trong cookie HttpOnly |
 | 004 | Gateway tự viết (TypeScript, `node:http`) thay vì Kong/Traefik: giải thích được từng chính sách |
 | 005 | Saga điều phối tập trung + outbox, thay vì choreography |
-| 006 | decision viết Python (engine đã kiểm chứng), các service còn lại NestJS |
+| 006 | Engine quyết định nằm sau một hợp đồng API, thay được (hiện là Python đã chạy qua bộ dữ liệu mẫu); thay engine thì chạy bóng và so bộ kiểm hồi quy trước khi bật |
+| 010 | Ký và xác minh là một service: mọi lời gọi tới nhà cung cấp ký, kiểm thu hồi, dấu thời gian, tra cứu hoá đơn đi qua đây; xác minh chứng từ bất đồng bộ |
 | 007 | Tiền là chuỗi số nguyên đồng, không dùng số thực; dữ liệu mẫu (đơn vị triệu) quy đổi lúc nạp (D3, D4) |
 | 008 | Bộ dữ liệu của bài toán gốc chỉ là dữ liệu mẫu và bộ kiểm hồi quy, không phải đầu vào của sản phẩm (D1, D2) |
 | 009 | Không giữ tiền: hệ thống tạo và gửi lệnh chi, ngân hàng của bên mua chuyển tiền (P7) |

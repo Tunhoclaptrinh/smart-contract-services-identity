@@ -19,7 +19,7 @@ mình; mỗi tệp tự nói tệp nào đọc tiếp.
 | --- | --- | --- |
 | `DINH_VI_SAN_PHAM.md` | BTL làm sản phẩm gì, khác bài dự thi ở đâu, sửa gì cho sát thực tế, nhật ký quyết định | trưởng nhóm |
 | `HE_THONG.md` | Toàn cảnh: service, cổng, database, token, luồng chính, chạy cả hệ | TV1 |
-| `PHAN_TICH_THIET_KE.md` | Phạm vi, vai trò, 26 quy tắc, API từng service, saga, thí nghiệm, ma trận yêu cầu hai môn | chủ từng service sửa mục của mình |
+| `PHAN_TICH_THIET_KE.md` | Phạm vi, vai trò, 27 quy tắc, API từng service, saga, thí nghiệm, ma trận yêu cầu hai môn | chủ từng service sửa mục của mình |
 | `LUAN_CU_KIEN_TRUC.md` | Vì sao kiến trúc, công nghệ, hàng đợi, CI; luồng L1–L8 đồng bộ hay bất đồng bộ | TV1, TV6 |
 | `TAN_DUNG_CODECASH.md` | Từng phần mã cũ: giữ, chỉnh, mới, bỏ; sửa chung C1–C12 | chủ từng service |
 | `DOI_CHIEU_CODECASH.md` | Tệp cũ nào sang service nào (backend); web: `btl-frontend/docs/DOI_CHIEU_CODECASH.md` | chủ từng service |

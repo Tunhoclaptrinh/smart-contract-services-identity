@@ -16,7 +16,7 @@ token → sửa tệp này trong cùng commit/PR (bảng mục 1, sơ đồ mụ
 | contract | `smart-contract-services-contract` | 3002 | `contract` | TV2 | contract-drafts, contract-templates, milestone-templates, rule-versions, extraction-proposals | chưa có |
 | signing | `smart-contract-services-signing` | 3004 | `signing` | TV3 | documents, signing, signing-requests, signing-profiles, attachments | chưa có |
 | execution | `smart-contract-services-execution` | 3005 | `execution` | TV4 | parties, contracts, milestones, events, status-history, acceptance-requests, amendments, exceptions, notes | chưa có |
-| decision (Python) | `smart-contract-services-decision` | 3006 | `decision` | TV5 | evaluations, engine-runs, payment-rules | chưa có |
+| decision (engine thay được; hiện Python) | `smart-contract-services-decision` | 3006 | `decision` | TV5 | evaluations, engine-runs, payment-rules | chưa có |
 | payment | `smart-contract-services-payment` | 3007 | `payment` | TV5 | payments | chưa có |
 | audit | `smart-contract-services-audit` | 3008 | `audit` | TV6 | audit (tập trung), anchor-jobs, notifications | chưa có |
 
@@ -33,7 +33,7 @@ flowchart LR
   gw --> ctr["contract :3002"]
   gw --> sig["signing :3004"]
   gw --> exe["execution :3005"]
-  gw --> dec["decision :3006 (Python)"]
+  gw --> dec["decision :3006"]
   gw --> pay["payment :3007"]
   gw --> aud["audit :3008"]
   ctr -. "hợp đồng đã chốt" .-> sig

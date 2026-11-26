@@ -131,7 +131,7 @@ khai và kiểm thử; đánh giá; hạn chế.
 | 1.2 Dữ liệu mẫu | Data Pack là gì, dùng vào đâu | 0,5 | `DINH_VI_SAN_PHAM.md` §5 | ERD Data Pack | TV4 | |
 | 1.3 Vai trò và luồng tổng thể | 9 vai trò + khách | 1,5 | `PHAN_TICH_THIET_KE.md` §2 | BPMN theo vai trò | TV1 | |
 | 1.4 Phạm vi | MoSCoW | 0,5 | `PHAN_TICH_THIET_KE.md` §1 | | TV2 | |
-| 1.5 Quy tắc nghiệp vụ | bảng 26 quy tắc có mã lỗi (MS-R1) | 2 | `PHAN_TICH_THIET_KE.md` §4 | | TV2 gom, mỗi người viết quy tắc của mình | |
+| 1.5 Quy tắc nghiệp vụ | bảng 27 quy tắc có mã lỗi (MS-R1) | 2 | `PHAN_TICH_THIET_KE.md` §4 | | TV2 gom, mỗi người viết quy tắc của mình | |
 | 1.6 Ràng buộc pháp lý | trần phạt, chữ ký điện tử, hoá đơn, không giữ tiền | 0,5 | `DINH_VI_SAN_PHAM.md` §4.2 | | TV2 | |
 | **2. Kiến trúc** | | **8** | | | TV1 chủ trì | |
 | 2.1 Hiện trạng ban đầu và vì sao tách | CodeCash monolith; tải thật; lý do thật | 1,5 | `LUAN_CU_KIEN_TRUC.md` §1 | kiến trúc cũ | TV1 | |
@@ -189,7 +189,7 @@ Chỉ liệt kê văn bản pháp luật đã dẫn (`DINH_VI_SAN_PHAM.md` §4.2
 | --- | --- | --- | --- |
 | 1 | Bài toán | chi tiền theo mốc bằng tay: chậm, sai, chi trùng, không giải thích được | TV2 |
 | 2 | Sản phẩm trong một câu | luồng soạn → ký → chứng từ → quyết định → chi → kiểm toán | TV2 |
-| 3 | Vì sao microservices (và vì sao không phải vì hiệu năng) | ranh giới rủi ro, phụ thuộc ngoài, Python, 6 người | TV1 |
+| 3 | Vì sao microservices (và vì sao không phải vì hiệu năng) | ranh giới rủi ro, chuỗi ký và xác minh với hệ ngoài, engine thay được, 6 người | TV1 |
 | 4 | Sơ đồ một trang + bảng service | 6 + identity + gateway, database riêng | TV1 |
 | 5 | Đồng bộ hay hàng đợi | đồ thị phụ thuộc không vòng; 3 chỗ dùng hàng đợi | TV6 |
 | 6 | Saga S1 và S4 | bù trừ, PENDING, Idempotency-Key | TV3, TV5 |
@@ -237,9 +237,11 @@ Câu trả lời gợi ý ngắn; đọc thêm ở tệp ghi bên cạnh.
 
 | Câu hỏi | Trả lời gợi ý | Đọc |
 | --- | --- | --- |
-| Tải nhỏ vậy sao phải microservices? | Đúng, monolith đủ; tách vì ranh giới rủi ro, phụ thuộc ngoài, engine Python, làm song song; nhóm trả giá bằng saga, outbox, idempotency | `LUAN_CU_KIEN_TRUC.md` §1 |
+| Tải nhỏ vậy sao phải microservices? | Đúng, monolith đủ; tách vì ranh giới rủi ro, chuỗi ký và xác minh với nhiều hệ ngoài, engine phải thay và mở rộng được, làm song song; nhóm trả giá bằng saga, outbox, idempotency | `LUAN_CU_KIEN_TRUC.md` §1 |
 | Vì sao 6 service, không 3 hay 10? | mỗi service khác các service khác ở ≥ 3 trong 6 tiêu chí; 47% thay đổi trong lịch sử mã nằm gọn một vùng; gộp thô thì lỗi ngân hàng và cập nhật luật kéo cả phần thực hiện, chia theo bảng thì phê duyệt cần 3–4 lời gọi và phá dòng sự kiện của mốc | `LUAN_CU_KIEN_TRUC.md` §2.1, §2.2, §2.6 |
 | contract và execution hay sửa cùng nhau, sao vẫn tách? | đúng, đó là ranh giới yếu nhất (20% đổi một mình); giảm bằng gói hợp đồng có phiên bản là hợp đồng duy nhất giữa hai bên, không chung kiểu; có dấu hiệu để gộp lại nếu vẫn dính | `LUAN_CU_KIEN_TRUC.md` §2.5, §2.8 |
+| Nếu thay engine thì sao? | decision nằm sau hợp đồng API; engine mới chạy bóng song song, so bộ kiểm hồi quy và quyết định thật, khớp mới bật; không service nào khác đổi | `LUAN_CU_KIEN_TRUC.md` §2.1b |
+| Dịch vụ kiểm chứng thư hay tra cứu hoá đơn chậm thì nộp chứng từ có treo không? | không: nộp trả 201, chứng từ `VERIFYING`, xác minh bất đồng bộ qua signing, có kết quả thì chấm lại; lưu bằng chứng lúc ký để xác minh về sau | `LUAN_CU_KIEN_TRUC.md` §2.1c |
 | Thực tế có ai tách như vậy không? | ký số, thanh toán, hoá đơn điện tử, lưu nhật ký vốn là các hệ riêng nối qua API; signing, payment, audit trùng các đường nối đó | `LUAN_CU_KIEN_TRUC.md` §2.7 |
 | Service A cần dữ liệu của B thì sao? | gọi API qua `ServiceClient` hoặc nhận sự kiện; không đọc database của nhau; execution giữ ảnh chụp hợp đồng | `LUAN_CU_KIEN_TRUC.md` §2–3 |
 | Sao không dùng hàng đợi cho chi tiền? | người duyệt cần kết quả ngay; trường hợp không chắc đã có PENDING và đối soát | `LUAN_CU_KIEN_TRUC.md` §6 |

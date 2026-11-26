@@ -77,6 +77,7 @@ trạng thái) mà chưa ghi vào §7 và được trưởng nhóm đồng ý** 
 | P7 | Lệnh chi đi qua "cổng thanh toán" giả lập | **Không giữ tiền**: hệ thống chỉ tạo lệnh và gửi sang ngân hàng của bên mua (mô phỏng); ghi trong báo cáo vì sao (giữ tiền là trung gian thanh toán, cần giấy phép) | Nghị định 52/2024/NĐ-CP | M | TV5 |
 | P8 | Dữ liệu cá nhân của người dùng, gửi hợp đồng cho AI nước ngoài (Gemini) | Không gửi dữ liệu thật ra nước ngoài; trích xuất AI **tắt mặc định** (xem §4.4); ghi chính sách lưu giữ | Luật Bảo vệ dữ liệu cá nhân 2025 | M | TV2, TV1 |
 | P9 | Lưu chứng từ không có chính sách thời hạn | Ghi chính sách lưu ≥ 10 năm cho chứng từ kế toán (không xoá cứng, chỉ lưu trữ) | Luật Kế toán 2015 Điều 41 | C | TV4, TV6 |
+| P10 | Chứng từ chỉ là tệp, không kiểm chữ ký số trên đó | Xác minh chữ ký số trên chứng từ (chứng thư còn hiệu lực, chưa thu hồi, dấu thời gian) và tra cứu hoá đơn điện tử, **mô phỏng** các dịch vụ bên ngoài; lưu bằng chứng lúc ký | Luật GDĐT 2023 Điều 22–27; Nghị định 23/2025/NĐ-CP; Nghị định 123/2020/NĐ-CP | S | TV3 (xác minh), TV4 (trạng thái chứng từ) |
 
 ### 4.3. Nghiệp vụ
 
@@ -95,7 +96,7 @@ trạng thái) mà chưa ghi vào §7 và được trưởng nhóm đồng ý** 
 | --- | --- | --- | --- | --- | --- |
 | T1 | Trích xuất điều khoản bằng Gemini (`trust/gemini-extractor.ts`) | **Tắt mặc định**; giữ luồng "đề xuất trích xuất → người xác nhận" với nhập tay. Chỉ bật nếu TV2 dư thời gian và có dữ liệu giả | MoSCoW đã xếp AI vào Won't; cần khoá API (bí mật); P8 | Won't | TV2 |
 | T2 | Lưu trữ file JSON / MongoDB / PostgreSQL | Chỉ PostgreSQL (file JSON giữ cho test); bỏ MongoDB | Một loại database dễ vận hành, đúng đề | M | đã xong ở chassis |
-| T3 | Engine Python gọi như tiến trình con | Service `decision` (FastAPI) gọi qua HTTP | MS-R2, MS-R5 | M | TV5 |
+| T3 | Engine Python gọi như tiến trình con | Service `decision` sau một hợp đồng API (hiện FastAPI bọc engine Python; engine thay được, chạy bóng trước khi bật) | MS-R2, MS-R5; mở rộng | M | TV5 |
 | T4 | Nhà ký từ xa và ký trên điện thoại (`apps/signer`, QR) | Giữ làm **nhà cung cấp ký mô phỏng** riêng: chính là phụ thuộc ngoài để làm PENDING_PROVIDER và thí nghiệm F3 | Có sẵn, đúng chỗ cần cho môn MS | S | TV3 |
 | T5 | TanStack Query cho dữ liệu máy chủ | **Giữ** TanStack Query; Redux Toolkit giữ phiên (đã có). Ghi lý do trong báo cáo LTWNC | Đề yêu cầu Redux Toolkit **hoặc** Zustand cho state toàn cục: phiên là state toàn cục và đã ở Redux; dữ liệu máy chủ là cache, không phải state ứng dụng. Nếu giảng viên yêu cầu chặt, chuyển dần sang RTK Query (cùng họ Redux Toolkit) theo từng tính năng | M | TV1 ghi lý do; hỏi giảng viên sớm |
 

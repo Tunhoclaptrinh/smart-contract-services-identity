@@ -31,10 +31,16 @@ Vì vậy, ta **không** biện minh microservices bằng hiệu năng. Lý do t
 1. **Ranh giới rủi ro khác nhau.** Chữ ký có giá trị pháp lý; dòng tiền cần chống chi trùng; engine
    phải tái lập được kết quả; nhật ký phải độc lập với người bị kiểm toán. Tách ra thì lỗi hoặc thay đổi
    ở phần soạn thảo không chạm tới phần chi tiền, và mỗi phần có quyền truy cập dữ liệu riêng.
-2. **Phụ thuộc ngoài không đáng tin**: nhà cung cấp ký số, ngân hàng. Cần cô lập để khi chúng chậm
-   hoặc sập thì phần còn lại vẫn chạy (§5, §6).
-3. **Ngôn ngữ khác nhau**: engine Python đã kiểm chứng trên 405 mốc của dữ liệu mẫu. Viết lại sang TypeScript là
-   rủi ro lớn nhất có thể tránh.
+2. **Ký và xác minh là chuỗi phụ thuộc ngoài dài nhất.** Ký số từ xa qua nhà cung cấp, kiểm chứng
+   thư còn hiệu lực hay đã bị thu hồi, lấy dấu thời gian, xác minh chữ ký số trên chứng từ đối tác gửi,
+   tra cứu hoá đơn điện tử với cơ quan thuế: mỗi bước là một hệ bên ngoài, có thể chậm vài giây, hết
+   hạn, đổi API hay sập. Ngân hàng cũng vậy ở phía chi tiền. Cô lập chúng để khi chúng chậm hoặc sập thì
+   phần còn lại vẫn chạy (§2.1c, §5, §6).
+3. **Phần quyết định phải thay được và mở rộng được.** Luật thanh toán là thứ đổi nhiều nhất và đáng
+   giá nhất của sản phẩm. Engine hôm nay (Python, đã chạy qua bộ dữ liệu mẫu) không phải là lý do tách;
+   lý do là engine nằm sau **một hợp đồng API** (gói dữ kiện vào, quyết định và vết ra), nên có thể viết
+   lại, đổi ngôn ngữ, chạy nhiều engine theo loại hợp đồng, hay chấm lại hàng loạt khi công bố luật mới,
+   mà không đụng phần nào khác (§2.1b).
 4. **Sáu người làm song song** trong ba tuần: mỗi người một repo, không giẫm chân (`KIEN_TRUC_REPO.md`).
 5. Môn Kiến trúc Microservices yêu cầu.
 
@@ -65,15 +71,46 @@ phương án chia khác.
 | --- | --- | --- | --- | --- | --- | --- |
 | identity | "người dùng", "phiên", "vai trò" | tài khoản, mật khẩu băm, phiên | đổi một mình 65% | lộ mật khẩu, giả token: chỉ một nơi giữ khoá ký | — | ai đã đăng nhập vẫn thao tác tới khi hết token (15 phút); đăng nhập mới chờ |
 | contract | "hợp đồng" = **bản đang thương lượng**, có phiên bản, bình luận, xác nhận | bản nháp, mốc dự kiến, thành viên | đổi một mình 20% (ranh giới yếu nhất, §2.5) | sửa điều khoản sau khi chốt | — | không soạn được; hợp đồng đang thực hiện không ảnh hưởng |
-| signing | "văn bản" = **bản đóng băng có mã băm**; "lượt ký" | văn bản, phiên ký, lượt | đổi một mình 52% | chữ ký sai người, văn bản bị đổi sau ký: rủi ro pháp lý | nhà cung cấp ký (CA) | không ký được; mọi phần khác chạy |
+| signing | "văn bản" = **bản đóng băng có mã băm**; "lượt ký"; "xác minh" | văn bản, phiên ký, lượt, kết quả xác minh kèm bằng chứng (phản hồi kiểm thu hồi, dấu thời gian) | đổi một mình 52% | chữ ký sai người, văn bản bị đổi sau ký, chấp nhận chứng từ có chữ ký giả: rủi ro pháp lý; giữ thông tin truy cập nhà cung cấp ký | **nhiều**: nhà cung cấp ký số, dịch vụ kiểm thu hồi chứng thư, dấu thời gian, tra cứu hoá đơn | không ký, không xác minh được; chứng từ vẫn nhận ở trạng thái chờ xác minh; mọi phần khác chạy |
 | execution | "hợp đồng" = **cam kết đang chạy, bất biến**; "mốc", "chứng từ" | mốc, chứng từ, phê duyệt, tranh chấp: **một dòng sự kiện** | đổi một mình 42% | chứng từ của bên không có thẩm quyền | — | không nộp, không duyệt được; chi tiền đã gửi vẫn đối soát |
-| decision | "luật", "phiên bản", "quyết định", "vết" | phiên bản luật, kết quả, vết (chỉ ghi thêm) | đổi một mình 57%; ít dính nhất với mọi phần (Jaccard 0,19–0,23) | sai số tiền; phải tái lập được kết quả cũ | — (Python) | chứng từ vẫn nhận, mốc `PENDING_EVALUATION` (S3) |
+| decision | "luật", "phiên bản", "quyết định", "vết" | phiên bản luật, kết quả, vết (chỉ ghi thêm) | đổi một mình 57%; ít dính nhất với mọi phần (Jaccard 0,19–0,23) | sai số tiền; phải tái lập được kết quả cũ theo đúng phiên bản luật | engine thay được sau hợp đồng API | chứng từ vẫn nhận, mốc `PENDING_EVALUATION` (S3); tải theo **đợt** (công bố luật → chấm lại hàng loạt), co giãn riêng |
 | payment | "lệnh chi", "đối soát", "khoá idempotency" | lệnh chi, nhật ký saga | ít đổi (CodeCash mới có phần khung) | **chi sai, chi trùng**: rủi ro tiền; giữ khoá API ngân hàng | ngân hàng | lệnh mới chờ; đã gửi thì `PENDING`, đối soát sau |
 | audit | "mục nhật ký", "đầu chuỗi", "neo" | bản sao nhật ký, chỉ ghi thêm | đổi kèm tính năng (27% một mình, §2.5) | người bị kiểm toán sửa được lịch sử | dịch vụ dấu thời gian (sau này) | thao tác vẫn chạy; nhật ký nằm trong outbox, về sau |
 
 Kết luận đọc từ bảng: mỗi service khác các service còn lại ở **ít nhất ba tiêu chí**. Hai trường hợp
-mạnh nhất là decision (khác ngôn ngữ lập trình, ít dính nhất, hàm thuần) và payment (rủi ro tiền, phụ
-thuộc ngân hàng, quyền riêng). Trường hợp yếu nhất là contract (§2.5).
+mạnh nhất là signing (nhiều phụ thuộc ngoài nhất, rủi ro pháp lý, dùng chung cho ba nơi), decision (hàm
+thuần thay được, ít dính nhất, tải theo đợt) và payment (rủi ro tiền, phụ thuộc ngân hàng, quyền riêng). Trường hợp yếu nhất là contract (§2.5).
+
+### 2.1b. Tính mở rộng: sản phẩm lớn lên thì mọc ở đâu
+
+Ranh giới tốt là chỗ mà **nhu cầu mới cắm vào một service** thay vì lan ra cả hệ.
+
+| Nhu cầu khi sản phẩm lớn lên | Mọc ở | Vì sao ranh giới hiện tại đỡ được |
+| --- | --- | --- |
+| Thay engine (viết lại, đổi ngôn ngữ, đổi thư viện luật, thêm luật do người dùng tự soạn) | decision | hợp đồng API giữ nguyên; engine mới chạy **chế độ bóng** song song engine cũ, so kết quả trên bộ kiểm hồi quy và trên quyết định thật, đủ khớp mới bật |
+| Nhiều engine: mỗi loại hợp đồng (xây dựng, phần mềm, bảo trì) một bộ luật hay một cách tính | decision | decision chọn engine theo phiên bản luật ghi trong gói dữ kiện; execution không biết có mấy engine |
+| Công bố phiên bản luật mới, chấm lại hàng nghìn mốc đang chạy | decision | decision không giữ trạng thái phiên, nhân bản được; execution đẩy việc chấm lại theo lô qua hàng đợi, màn người dùng không chậm |
+| Thêm nhà cung cấp chữ ký số, ký từ xa trên điện thoại, ký bằng thiết bị | signing | mỗi nhà cung cấp một adapter sau cùng một giao diện "ký" và "xác minh" |
+| Xác minh chữ ký số trên chứng từ đối tác gửi (biên bản ký số, hoá đơn điện tử), tra cứu hoá đơn với cơ quan thuế | signing | cùng năng lực "xác minh" dùng cho hợp đồng, chứng từ và trang khách (§2.1c) |
+| Thêm ngân hàng, cổng thanh toán, lệnh chi theo lô | payment | adapter ngân hàng; `Idempotency-Key`, PENDING và đối soát giữ nguyên |
+| Đẩy dữ liệu sang ERP, phần mềm kế toán của khách hàng | audit (sự kiện) hoặc payment | hệ ngoài nghe sự kiện `payment.settled`, `decision.made`; không ai phải sửa execution |
+| Đăng nhập một lần (SSO) của doanh nghiệp lớn | identity | service nghiệp vụ vẫn chỉ kiểm JWT |
+| Kênh thông báo mới (email, tin nhắn) | audit (phần thông báo) | thêm consumer, không ai khác đổi |
+| Khách hàng lớn cần dữ liệu tách riêng | từng service | mỗi service đã có database riêng; bước tiếp theo là tách theo khách hàng trong service đó |
+
+### 2.1c. Vì sao ký và xác minh phải là một service riêng
+
+Đây là ranh giới **khó gộp nhất** trong thực tế, vì nó là nơi hệ thống phải nói chuyện với nhiều bên
+ngoài nhất và mọi câu trả lời đều có hệ quả pháp lý.
+
+| Vấn đề thật | Hệ quả nếu để lẫn trong contract hay execution | signing riêng giải quyết thế nào |
+| --- | --- | --- |
+| Gọi nhà cung cấp ký số, dịch vụ kiểm thu hồi chứng thư, dấu thời gian, cổng tra cứu hoá đơn: chậm vài giây, có lúc sập, mỗi nơi một kiểu API | màn nộp chứng từ treo theo dịch vụ kiểm thu hồi; đổi nhà cung cấp là sửa execution | timeout, thử lại, circuit breaker, **xác minh bất đồng bộ** (`VERIFYING` → `VERIFIED` / `FAILED`); adapter từng nhà cung cấp |
+| Chữ ký phải đúng **tại thời điểm ký**: chứng thư còn hiệu lực, chưa bị thu hồi; sau 10 năm vẫn phải chứng minh được | kiểm lúc mở xem thì chứng thư đã hết hạn, mất bằng chứng | lưu kèm kết quả kiểm thu hồi và dấu thời gian lúc ký (bằng chứng dài hạn), xác minh lại bằng chính bằng chứng đó |
+| Một năng lực, ba nơi dùng: ký hợp đồng, xác minh chứng từ khi nộp, khách xác minh văn bản | ba bản logic xác minh, lệch nhau dần | một service, một luật xác minh |
+| Thông tin truy cập nhà cung cấp ký, chứng thư của hệ thống | lộ theo database của phần soạn hay phần thực hiện | chỉ signing giữ |
+| Văn bản đã ký phải bất biến: đổi một byte là phải biết | ai cũng ghi được kho tài liệu | một kho tài liệu duy nhất, băm khi nhận, niêm phong sau chữ ký cuối |
+| Pháp lý thay đổi: chuyển từ chữ ký mô phỏng sang chữ ký số của tổ chức được cấp phép | sửa nhiều service | chỉ signing (§2.3) |
 
 ### 2.2. Bằng chứng từ lịch sử mã
 
@@ -120,6 +157,9 @@ Lợi ích thật của ranh giới tốt là **một thay đổi nghiệp vụ 
 | Thêm loại hợp đồng "bảo trì" với mẫu mốc riêng | contract (mẫu), decision (luật nếu khác) | execution, payment, audit |
 | Quy định mới về trường bắt buộc của hoá đơn điện tử | execution (+ màn nộp chứng từ) | còn lại |
 | Thời hạn lưu nhật ký đổi từ 10 lên 15 năm, thêm neo dấu thời gian bên ngoài | audit | còn lại |
+| Thay engine quyết định (viết lại bằng ngôn ngữ khác, thư viện luật khác) | decision (chạy bóng, so bộ kiểm, rồi bật) | còn lại |
+| Thêm nhà cung cấp chữ ký số thứ hai, hoặc kiểm thu hồi chứng thư qua dịch vụ khác | signing (thêm adapter) | còn lại |
+| Bắt buộc xác minh hoá đơn điện tử với cơ quan thuế trước khi tính chứng từ | signing (năng lực xác minh), execution chỉ đọc kết quả | decision, payment, contract |
 | Thêm đăng nhập một lần (SSO) cho khách hàng doanh nghiệp | identity (+ gateway nếu đổi cách kiểm token) | mọi service nghiệp vụ (vẫn kiểm JWT như cũ) |
 
 Ở bản một khối, mỗi dòng trên là một lần triển khai lại **toàn bộ** hệ, kể cả phần chi tiền đang chạy.
@@ -131,6 +171,8 @@ Lợi ích thật của ranh giới tốt là **một thay đổi nghiệp vụ 
 | Ngân hàng chậm 30 giây mỗi lệnh | kết nối dồn lại trong cùng một tiến trình; các màn khác chậm theo | payment trả `PENDING`, circuit breaker mở; soạn, ký, nộp chứng từ không biết gì (F2) |
 | Engine lỗi sau khi cập nhật bộ luật | cả API phải quay lại bản trước | quay lại riêng decision; trong lúc đó mốc `PENDING_EVALUATION`, không mất chứng từ (F1) |
 | Nhà cung cấp ký sập | | chỉ ký bị chờ (`PENDING_PROVIDER`); hợp đồng đang thực hiện không ảnh hưởng (F3) |
+| Dịch vụ kiểm thu hồi chứng thư hay cổng tra cứu hoá đơn chậm, sập | nộp chứng từ treo hoặc lỗi; người dùng gửi lại, sinh chứng từ trùng | nộp vẫn trả 201, chứng từ `VERIFYING`, chưa được tính vào điều kiện chi; signing thử lại theo lịch; có kết quả thì execution chấm lại |
+| Engine mới cho kết quả khác sau khi thay | quay lại toàn bộ API | chế độ bóng phát hiện trước khi bật; nếu đã bật, quay lại riêng decision |
 | Một lỗi bảo mật ở màn soạn hợp đồng cho đọc được database | đọc được mọi bảng, kể cả mật khẩu băm và lệnh chi | chỉ đọc được database của contract; mật khẩu ở identity, lệnh chi ở payment, tài khoản DB riêng (`infra/postgres-init.sql`) |
 | Quản trị execution muốn sửa lịch sử duyệt cho khớp | sửa được cả bảng audit | audit là database khác, tài khoản khác; bản sao nhật ký và đầu chuỗi băm của từng service để đối chiếu (L7) |
 
@@ -164,7 +206,7 @@ ký** (L3), một **lệnh chi** (L6).
 | Phương án | Số service nghiệp vụ | Phê duyệt | Lượt ký | Lệnh chi | Vấn đề |
 | --- | --- | --- | --- | --- | --- |
 | **Đang chọn** | 6 | 1 (execution → decision) | 0 (lượt cuối: 1 sang contract) | 2 (→ execution, → decision) + ngân hàng | contract là ranh giới yếu (§2.5) |
-| Gộp thô: soạn+ký, thực hiện+quyết định+chi, kiểm toán | 3 | 0 | 0 | 0 | không đủ ≥ 5 service của đề; engine Python vẫn phải chạy riêng; lỗi ngân hàng và cập nhật luật kéo cả phần thực hiện; quyền chi tiền và quyền nộp chứng từ chung một database |
+| Gộp thô: soạn+ký, thực hiện+quyết định+chi, kiểm toán | 3 | 0 | 0 | 0 | không đủ ≥ 5 service của đề; thay engine hay chấm lại hàng loạt kéo cả phần thực hiện; lỗi ngân hàng và cập nhật luật kéo cả phần thực hiện; quyền chi tiền và quyền nộp chứng từ chung một database |
 | Chia theo bảng (mỗi thực thể một service: hợp đồng, mốc, chứng từ, phê duyệt, tranh chấp…) | 10+ | 3–4: decision cần chứng từ, phê duyệt, tranh chấp của cùng mốc từ ba nơi | 1 (kiểm mã băm ở dịch vụ tài liệu) | 3–4 | engine coi chứng từ, phê duyệt, từ chối, tranh chấp là **một dòng sự kiện của mốc** (tranh chấp có thể phạm vi cả hợp đồng); chia ra thì không còn một thời điểm nhất quán để chấm, "đủ người duyệt chưa" thành câu hỏi phân tán |
 | Tách thêm tài liệu, thông báo, bộ luật thành service riêng | 9 | 1 | 1 | 2 | thêm 3 repo, 3 database cho 6 người trong 3 tuần mà không có tiêu chí nào khác biệt đủ mạnh (§2.1) |
 
@@ -220,6 +262,8 @@ giây vẫn đúng.**
 | signing → execution: hợp đồng đã ký (`contract.activated`) | **bất đồng bộ** | chữ ký đã có giá trị; execution sập lúc đó không được làm hỏng lượt ký, và không được mất hợp đồng |
 | Mọi service → audit: mục nhật ký | **bất đồng bộ** | nhật ký trung tâm không được làm chậm hay chặn thao tác của người dùng |
 | Mọi service → thông báo, email | **bất đồng bộ** | gửi mail chậm, hay lỗi; người dùng không chờ mail |
+| execution → signing: xác minh chữ ký, hoá đơn của chứng từ vừa nộp | **bất đồng bộ** (yêu cầu xác minh, kết quả về bằng sự kiện) | kiểm thu hồi, tra cứu thuế mất vài giây tới vài phút; người nộp không chờ; có kết quả thì chấm lại |
+| execution → decision khi công bố luật mới: chấm lại hàng loạt | **bất đồng bộ** (theo lô qua hàng đợi) | hàng nghìn mốc; không được làm chậm màn người dùng |
 | payment → execution: đã chi (`payment.settled`) | **bất đồng bộ** | ngân hàng có thể báo về muộn (đối soát); mốc đổi sang đã chi khi có kết quả |
 
 **Đường đọc không có lời gọi chéo.** Màn danh sách, việc cần làm, chi tiết mốc (các thao tác nhiều
@@ -242,7 +286,8 @@ nhất) chỉ đi web → gateway → **một** service, vì mỗi service có �
 | **Consumer idempotent** (`processed-messages`) | Hàng đợi giao "ít nhất một lần"; message đến hai lần không được ghi hai lần | Nhập một hợp đồng hai lần, ghi một mục nhật ký hai lần | Bảng khoá duy nhất theo `messageId` là cách đơn giản và chắc nhất |
 | **Circuit breaker + bulkhead** (chỉ quanh ngân hàng và nhà cung cấp ký) | Ngân hàng chậm thì ngừng gọi một lúc, trả lỗi nhanh, không dồn hàng trăm kết nối treo | Mỗi request chờ đủ timeout, kết nối dồn lên, gateway timeout lan sang cả những màn không liên quan | Chỉ đặt ở phụ thuộc **ngoài**, không đặt ở mọi lời gọi nội bộ (tải nội bộ thấp, thêm vào chỉ làm khó debug) |
 | **Nhật ký chuỗi băm** | Kiểm toán biết có ai sửa hay xoá lịch sử không | Người có quyền DB sửa lại "ai duyệt, lúc nào" mà không ai biết | Mỗi mục chứa băm của mục trước; `GET /audit/verify` tính lại. Blockchain thật là thừa: không có nhiều bên không tin nhau cùng ghi |
-| **Engine Python giữ nguyên** | Quyết định đã kiểm chứng trên 405 mốc của dữ liệu mẫu | Viết lại: mất bằng chứng đúng, rủi ro sai số tiền | FastAPI bọc mỏng quanh `codecash_engine.evaluate` |
+| **Engine sau hợp đồng API** (decision) | Luật thanh toán đổi nhiều nhất; engine thay được mà không đụng ai | Engine gắn vào execution: đổi engine là sửa, kiểm, triển khai lại execution; không chạy bóng được | Hiện dùng engine Python đã chạy qua bộ dữ liệu mẫu và bộ kiểm hồi quy; thay engine thì chạy bóng, so kết quả rồi mới bật |
+| **Xác minh chữ ký và chứng từ** (signing) | Chữ ký đúng tại thời điểm ký, bằng chứng dài hạn, hoá đơn có thật | Chấp nhận chứng từ chữ ký giả; mất bằng chứng khi chứng thư hết hạn | Một năng lực dùng cho hợp đồng, chứng từ, trang khách; adapter từng nhà cung cấp; bất đồng bộ khi bên ngoài chậm |
 | **Docker + `docker compose`** | Máy chấm chạy cả hệ bằng một lệnh, đúng phiên bản (MS-R7) | "Máy em chạy được": thiếu Postgres, sai phiên bản Node, quên biến môi trường | Kubernetes giải quyết nhiều máy, tự co giãn: không có nhu cầu đó; compose là đủ và đề yêu cầu |
 | **Request id xuyên service** | Lần một lỗi qua gateway → signing → contract bằng một mã | Ba service ba log, không biết dòng nào thuộc request nào | Header `x-request-id`, đã có sẵn. Grafana/Loki chỉ làm nếu dư thời gian |
 | **k6** | Số liệu thí nghiệm lỗi trước và sau (MS-R8) | Không có số, chỉ có "em thấy nó chạy" | Viết kịch bản bằng JavaScript, chạy trong container |
@@ -256,6 +301,7 @@ flowchart LR
   gw --> idn[identity] & ctr[contract] & sig[signing] & exe[execution] & dec[decision] & pay[payment] & aud[audit]
   sig -- "đồng bộ: khoá / kích hoạt" --> ctr
   sig -- "đồng bộ, timeout → PENDING" --> esp[(nhà cung cấp ký mô phỏng)]
+  sig -- "bất đồng bộ, có lịch thử lại" --> ver[(kiểm thu hồi chứng thư, dấu thời gian, tra cứu hoá đơn)]
   exe -- "đồng bộ, timeout → PENDING_EVALUATION" --> dec
   pay -- "đồng bộ: khoá mốc" --> exe
   pay -- "đồng bộ: xác nhận" --> dec
@@ -263,7 +309,10 @@ flowchart LR
   sig -. "contract.activated" .-> mq{{RabbitMQ}}
   pay -. "payment.settled" .-> mq
   ctr & sig & exe & dec & pay & idn -. "mục nhật ký (outbox)" .-> mq
-  mq -. "nhập hợp đồng, cập nhật đã chi" .-> exe
+  exe -. "yêu cầu xác minh chứng từ; chấm lại theo lô" .-> mq
+  mq -. "xác minh" .-> sig
+  mq -. "chấm lại theo lô" .-> dec
+  mq -. "nhập hợp đồng, cập nhật đã chi, kết quả xác minh" .-> exe
   mq -. "nhật ký, thông báo" .-> aud
 ```
 
@@ -276,7 +325,7 @@ payment gọi execution và decision. Nhờ vậy không có kiểu "A chờ B, 
 Trả lời thẳng: **không cần cho luồng tiền và luồng quyết định**. Chúng đồng bộ, có PENDING và đối
 soát; thêm hàng đợi chỉ làm khó theo dõi.
 
-**Cần**, và chỉ ở ba chỗ, vì cùng một lý do (bên phát không được phụ thuộc bên nhận, và nhiều bên cùng
+**Cần** ở năm chỗ, chia hai nhóm. Nhóm một (bên phát không được phụ thuộc bên nhận, và nhiều bên cùng
 nhận):
 
 1. **`contract.activated`** (S2): signing phát một lần, execution nhập hợp đồng, audit ghi, thông báo
@@ -284,6 +333,13 @@ nhận):
 2. **Nhật ký về audit**: mọi service đều phát, mỗi thao tác một mục. Gọi HTTP đồng bộ thì audit chậm
    làm chậm mọi thao tác, audit sập thì không ai thao tác được.
 3. **Thông báo**: email chậm và hay lỗi; người dùng không được chờ.
+
+Nhóm hai (việc chậm hoặc nhiều, không được làm người dùng chờ):
+
+4. **Xác minh chứng từ** (execution → signing): kiểm thu hồi chứng thư, tra cứu hoá đơn mất vài giây tới
+   vài phút, có lúc bên ngoài sập; yêu cầu nằm trong hàng đợi, thử lại theo lịch, kết quả về bằng sự kiện.
+5. **Chấm lại hàng loạt** khi công bố phiên bản luật (execution → decision): hàng nghìn mốc chia lô;
+   decision nhân bản để chạy nhanh, màn người dùng không chậm.
 
 Nếu thiếu thời gian, phương án tối thiểu vẫn đúng: **outbox + tiến trình gửi HTTP có thử lại** (không
 broker). Mất điểm cộng MS-B1 (+0,5) nhưng không mất tính đúng. Vì thế thứ tự làm là: outbox trước (bắt
@@ -396,6 +452,10 @@ sequenceDiagram
   W->>E: POST /milestones/{id}/approvals (BR-B05) → chấm lại như trên
 ```
 
+Chứng từ có chữ ký số hoặc là hoá đơn điện tử: execution lưu với trạng thái `VERIFYING` và gửi yêu cầu
+xác minh sang signing (bất đồng bộ). Chứng từ chưa được tính vào điều kiện chi cho tới khi signing trả
+`evidence.verified` (chấm lại) hoặc `evidence.rejected` (chứng từ không tính, người nộp thấy lý do).
+
 Đây là luồng chạy nhiều nhất của nửa sau. Chấm đồng bộ vì người duyệt cần thấy ngay "đã đủ điều kiện
 chi chưa"; PENDING_EVALUATION để không phụ thuộc vào việc decision đang sống.
 
@@ -450,4 +510,6 @@ từ chối = giá trị hợp đồng) → nhà cung cấp xác nhận → hợ
 | Token đã đăng xuất còn dùng được ở service khác tới 15 phút | chấp nhận có ý thức; sau này phát `user.disabled` để service chặn sớm |
 | Dữ liệu tổ chức lệch giữa identity và execution | identity là nguồn; execution chỉ giữ bản sao theo mã, đến qua gói hợp đồng |
 | Lệnh chi trùng | `Idempotency-Key`, một lệnh mỗi mốc (BR-B10), khoá mốc `PAYMENT_REQUESTED`, PENDING thay vì đoán |
+| Engine mới chấm khác engine cũ | chế độ bóng, bộ kiểm hồi quy, phiên bản luật ghi trong mỗi quyết định để tái lập |
+| Dịch vụ xác minh bên ngoài chậm làm nghẽn nộp chứng từ | xác minh bất đồng bộ, chứng từ `VERIFYING`, lưu bằng chứng lúc ký |
 | Mất sự kiện giữa các service | outbox trong cùng giao dịch; consumer idempotent; DLQ có màn xem và đẩy lại |
